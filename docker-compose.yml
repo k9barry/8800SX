@@ -1,0 +1,10 @@
+version: '3.7'
+
+services:
+  powershell:
+    image: microsoft/powershell:latest
+    container_name: powershell
+    volumes:
+      - ./scripts:/scripts
+      - ./upload:/tmp
+    entrypoint: powershell.exe -ExecutionPolicy Bypass -File .\scripts\8800SX.ps1
