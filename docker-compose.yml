@@ -8,3 +8,38 @@ services:
       - ./scripts:/scripts
       - ./upload:/tmp
     entrypoint: powershell.exe -ExecutionPolicy Bypass -File .\scripts\8800SX.ps1
+    networks:
+      - backend
+
+  web:
+    image: apache:${PHP_VERSION}
+    restart: always
+    depends_on:
+      - mariadb
+    ports:
+      - '8080:80'
+    links:
+      - mariadb
+    networks:
+      - backend
+      - frontend
+      
+  mariadb:
+    image: mariadb:${MARIADB_VERSION}
+    restart: always
+    volumes: 
+      - ./db/data:${MARIADB_DATA_DIR}
+      - ./db/logs:${MARIADB_LOG_DIR}
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    networks:
+      - backend
+      
+networks:
+  frontend:
+    driver: bridge         
+  backend:
+    driver: bridge
