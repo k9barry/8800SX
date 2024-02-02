@@ -2,42 +2,53 @@ version: '3.7'
 
 services:
   powershell:
-    image: microsoft/powershell:latest
+    image: mcr.microsoft.com/powershell
     container_name: powershell
     volumes:
       - ./scripts:/scripts
       - ./upload:/tmp
-    entrypoint: powershell.exe -ExecutionPolicy Bypass -File .\scripts\8800SX.ps1
+    entrypoint: powershell.exe -ExecutionPolicy Bypass -File /scripts/8800SX.ps1
     networks:
       - backend
 
-  web:
-    image: apache:${PHP_VERSION}
-    restart: always
-    depends_on:
-      - mariadb
-    ports:
-      - '8080:80'
-    links:
-      - mariadb
-    networks:
-      - backend
-      - frontend
-      
-  mariadb:
-    image: mariadb:${MARIADB_VERSION}
+  db:
+    image: mysql
+    container_name: db
     restart: always
     volumes: 
-      - ./db/data:${MARIADB_DATA_DIR}
-      - ./db/logs:${MARIADB_LOG_DIR}
+      - ./db/data:/var/lib/mysql
+      - ./db/logs:/var/log/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: Password
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
     networks:
       - backend
-      
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: pma
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: Password
+    restart: always
+    ports:
+      - 8888:80
+    networks:
+      - backend
+  
+  tinyfilemanager:
+    image: tinyfilemanager/tinyfilemanager:master
+    container_name: tinyfilemanager
+    restart: always
+    volumes:
+      - ./scripts/upload:/var/www/html/data
+    ports:
+      - 8088:80
+    networks:
+      - backend
+            
 networks:
   frontend:
     driver: bridge         
