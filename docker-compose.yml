@@ -11,6 +11,28 @@ services:
     networks:
       - backend
 
+  web:
+    image: nginx:latest
+    container_name: web
+    restart: always
+    ports:
+      - 8080:80
+    volumes:
+      - ./data/web:/var/www/html
+      - ./data/config/nginx.conf:/etc/nginx/conf.d/nginx.conf
+    networks:
+      - backend
+      - frontend
+
+  php-fpm:
+    image: php:8.2-fpm
+    container_name: php8.2
+    volumes:
+      - ./app:/var/www/html
+    networks:
+      - backend
+      - frontend
+
   db:
     image: mysql
     container_name: db
