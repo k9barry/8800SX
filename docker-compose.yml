@@ -1,15 +1,6 @@
 version: '3.7'
 
 services:
-  powershell:
-    image: mcr.microsoft.com/powershell
-    container_name: powershell
-    volumes:
-      - ./scripts:/scripts
-      - ./upload:/tmp
-    entrypoint: powershell.exe -ExecutionPolicy Bypass -File /scripts/8800SX.ps1
-    networks:
-      - backend
 
   web:
     image: nginx:latest
@@ -72,6 +63,16 @@ services:
       - 8088:80
     networks:
       - backend
+
+#  powershell:
+#    image: mcr.microsoft.com/powershell
+#    container_name: powershell
+#    volumes:
+#      - ./scripts:/scripts
+#      - ./upload:/tmp
+#    entrypoint: powershell.exe -ExecutionPolicy Bypass -File /scripts/8800SX.ps1
+#    networks:
+#      - backend
             
 networks:
   frontend:
