@@ -32,7 +32,7 @@ services:
       - ./data/db/data:/var/lib/mysql
       - ./data/db/logs:/var/log/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: Password
+      MYSQL_ROOT_PASSWORD: ChangeThisOnlS7bBCb
       MYSQL_DATABASE: "${MYSQL_DATABASE}"
       MYSQL_USER: "${MYSQL_USER}"
       MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
@@ -42,12 +42,9 @@ services:
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: pma
-    environment:
-      PMA_HOST: "${PMA_HOST}"
-      PMA_USER: "${PMA_USER}"
-      PMA_PASSWORD: "${PMA_PASSWORD}"
-      #MYSQL_ROOT_PASSWORD: Password
     restart: always
+    environment:
+      PMA_HOST: db
     depends_on:
       - db
     ports:
