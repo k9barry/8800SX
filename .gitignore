@@ -1,3 +1,4 @@
-.env
-db/
-compose-dev.yaml
+/.env
+/data/db/
+/data/web/upload/
+/data/web/log.txt
