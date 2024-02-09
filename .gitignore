@@ -1,4 +1,4 @@
 /.env
 /data/db/
-/data/web/upload/
+/data/web/uploads/
 /data/web/log.txt

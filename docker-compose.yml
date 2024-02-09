@@ -27,10 +27,12 @@ services:
   db:
     image: mysql
     container_name: db
+    #command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     restart: always
     volumes: 
       - ./data/db/data:/var/lib/mysql
       - ./data/db/logs:/var/log/mysql
+      - ./data/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     environment:
       MYSQL_ROOT_PASSWORD: ChangeThisOnlS7bBCb
       MYSQL_DATABASE: "${MYSQL_DATABASE}"
@@ -44,7 +46,9 @@ services:
     container_name: pma
     restart: always
     environment:
-      PMA_HOST: db
+      PMA_HOST: "${PMA_HOST}"
+    #  PMA_USER: "${PMA_USER}"
+    #  PMA_PASSWORD: "${PMA_PASSWORD}"
     depends_on:
       - db
     ports:
