@@ -1,68 +1,65 @@
-<html>
-
-<head>
-    <link href="./jquery-upload-file/css/uploadfile.css" rel="stylesheet">
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script src="./jquery-upload-file/js/jquery.uploadfile.min.js"></script>
+<html>  
+<head>  
+    <title>Multiple File Upload Form</title>  
+    <link rel="stylesheet" href="bootstrap.min.css" />  
 </head>
-
-<body>
-    <div id="fileuploader">Upload</div>
-    <script>
-        $(document).ready(function() {
-            $("#fileuploader").uploadFile({
-                url: "./jquery-upload-file/php/upload.php",
-                autoSubmit: false,
-                multiple: true,
-                returnType: "json",
-                fileName: "myfile",
-                upload_path: '../../uploads',
-                allowedTypes: "txt",
-                multiple: true,
-                onLoad: function(obj) {
-                    $.ajax({
-                        cache: false,
-                        url: "./jquery-upload-file/php/load.php",
-                        dataType: "json",
-                        success: function(data) {
-                            for (var i = 0; i < data.length; i++) {
-                                obj.createProgress(data[i]);
-                            }
-                        }
-                    });
-                },
-                onSelect: function(files) {
-                    uploadObj.startUpload();
-                    return true; //to allow file submission.
-                },
-                $("#extrabutton").click(function()
+<style>
+ .box
+ {
+  width:100%;
+  max-width:600px;
+  background-color:#f9f9f9;
+  border:1px solid #ccc;
+  border-radius:5px;
+  padding:16px;
+  margin:0 auto;
+ }
+ .error
 {
-
-	extraObj.startUpload();
-}); 
-                /*onSubmit: function(files) {
-                    //files : List of files to be uploaded
-                    //return false;   to stop upload
-                    var_dump(files);
-                    uploadObj.startUpload();
-                    return true;
-                },*/
-                onSuccess: function(files, data, xhr, pd) {
-                    $("#fileuploader").html($("#fileuploader").html() + "<br/>Success for: " + JSON.stringify(data));
-                },
-                afterUploadAll: function(obj) {
-                    $("#fileuploader").html($("#fileuploader").html() + "<br/>All files are uploaded");
-                    //function to check of file exists in db filename and file into database.
-                },
-                onError: function(files, status, errMsg, pd) {
-                    $("#fileuploader").html($("#fileuploader").html() + "<br/>Error for: " + JSON.stringify(files));
-                },
-                onCancel: function(files, pd) {
-                    $("#fileuploader").html($("#fileuploader").html() + "<br/>Canceled  files: " + JSON.stringify(files));
-                }
-            });
-        });
-    </script>
-</body>
-
+  color: red;
+  font-weight: 700;
+} 
+</style>
+<?php
+include('connection.php');
+if(isset($_REQUEST['file-upload']))
+{
+  for($i=0; $i<count($_FILES['multiple_files']['name']); $i++)
+  {
+    $filename[] = basename($_FILES['multiple_files']['name'][$i]);
+    $uploadfile = $_FILES['multiple_files']['tmp_name'][$i];
+    $targetpath = "uploads/".$filename[$i];
+    move_uploaded_file($uploadfile, $targetpath);
+  }
+    $filename = implode(', ',$_FILES['multiple_files']['name']);
+    $insert_query = mysqli_query($connection,"insert into vaivi set filename='$filename'");
+    if($insert_query>0)
+    {
+      $msg = "Images uploaded successfuly";
+    }
+    else
+    {
+      $msg = "Error!";
+    }
+}
+?>
+<body>  
+    <div class="container">  
+    <div class="table-responsive">  
+    <h3 align="center">Multiple Image Upload Form</h3><br/>
+    <div class="box">
+     <form method="post" enctype="multipart/form-data">
+     <div class="form-group">
+       <label for="image">Select Multiple Image</label>
+       <input type="file" name="multiple_files[]" class="form-control" multiple required/>
+      </div>  
+      <div class="form-group">
+       <input type="submit" id="file-upload" name="file-upload" value="Submit" class="btn btn-success" />
+       </div>
+       <p class="error"><?php if(!empty($msg)){ echo $msg; } ?></p>
+     </form>
+     </div>
+   </div>  
+  </div>
+ </body>  
 </html>

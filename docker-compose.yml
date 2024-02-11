@@ -17,8 +17,12 @@ services:
       - backend
 
   php-fpm:
-    image: php:8.2-fpm
+    #image: php:8.2-fpm
     container_name: php8.2
+    # Dockerfile path
+    build:
+      context: .
+      dockerfile: mysql.dockerfile
     volumes:
       - ./data/web:/var/www/html
     networks:
