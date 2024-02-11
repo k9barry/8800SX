@@ -35,6 +35,11 @@
                     uploadObj.startUpload();
                     return true; //to allow file submission.
                 },
+                $("#extrabutton").click(function()
+{
+
+	extraObj.startUpload();
+}); 
                 /*onSubmit: function(files) {
                     //files : List of files to be uploaded
                     //return false;   to stop upload

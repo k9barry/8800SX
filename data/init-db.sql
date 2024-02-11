@@ -1,9 +1,9 @@
-CREATE DATABASE IF NOT EXISTS 8800SX;
+CREATE DATABASE IF NOT EXISTS viavi;
 
-USE 8800SX;
+USE viavi;
 
-CREATE USER 'viavi'@'%' IDENTIFIED BY 'viavi';
-GRANT ALL ON 8800SX.* TO 'viavi'@'%';
+CREATE USER 'viavi'@'%' IDENTIFIED BY '8800SX';
+GRANT ALL ON viavi.* TO 'viavi'@'%';
 
 FLUSH PRIVILEGES;
 
@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS alignments (
   model VARCHAR(25) NOT NULL,
   serial VARCHAR(25) NOT NULL,
   file BLOB NOT NULL,
-  entered DATETIME(2) NOT NULL,
+  entered DATETIME(2) NOT NULL,  
+  filename VARCHAR(50) NOT NULL,
   PRIMARY KEY (id)
 ) Engine = InnoDB;
