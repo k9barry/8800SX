@@ -67,7 +67,7 @@ services:
     depends_on:
       - web
     volumes:
-      - ./data/web/upload/uploadfolder/upload:/var/www/html/uploadfolder/upload
+      - ./data/web/uploads:/var/www/html/uploads
     ports:
       - 8088:80
     networks:
