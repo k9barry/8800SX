@@ -25,36 +25,40 @@ include('connection.php');
 if (isset($_REQUEST['file-upload'])) {
   for ($i = 0; $i < count($_FILES['multiple_files']['name']); $i++) {
     $filename[] = basename($_FILES['multiple_files']['name'][$i]);
+
+    //check to see if file has been uploaded previously if so skip
+
     $uploadfile = $_FILES['multiple_files']['tmp_name'][$i];
     $targetpath = "uploads/" . $filename[$i];
     move_uploaded_file($uploadfile, $targetpath);
-  
-  $filename = implode(', ', $_FILES['multiple_files']['name']);
 
-  $filevalue = explode('-', $filename);
-  $month = substr($filevalue[2], 0, 2);
-  $day = substr($filevalue[2], 2, 2);
-  $year = substr($filevalue[2], 4, 4);
-  $hour = substr($filevalue[3], 0, 2);
-  $minute = substr($filevalue[3], 2, 2);
-  $second = substr($filevalue[3], 4, 2);
+    $file = file_get_contents($targetpath);
 
-  $time = $filevalue[3];
-  $datetime = "" . $year . "-" . $month . "-" . $day . " " . $hour . ":" . $minute . ":" . $second . "";
-  $model = $filevalue[0];
-  $serial = $filevalue[1];
-  $file = $filevalue[4];
+    $filevalue = explode('-', $filename[$i]);
+    $month = substr($filevalue[2], 0, 2);
+    $day = substr($filevalue[2], 2, 2);
+    $year = substr($filevalue[2], 4, 4);
+    $hour = substr($filevalue[3], 0, 2);
+    $minute = substr($filevalue[3], 2, 2);
+    $second = substr($filevalue[3], 4, 2);
 
-  $query = "INSERT into alignments (datetime, model, serial, file, filename) VALUES ('$datetime', '$model', '$serial', '$file', '$filename')";
-  echo ($query . "<br>");
-  $insert_query = mysqli_query($connection, $query);
+    $time = $filevalue[3];
+    $datetime = "" . $year . "-" . $month . "-" . $day . " " . $hour . ":" . $minute . ":" . $second . "";
+    $model = $filevalue[0];
+    $serial = $filevalue[1];
 
-  if ($insert_query > 0) {
-    $msg = "Images uploaded successfuly";
-  } else {
-    $msg = "Error!";
+    $query = "INSERT INTO alignments (datetime, model, serial, file, filename) VALUES ('$datetime', '$model', '$serial', '$file', '$filename[$i]')";
+    echo ($query . "<br>");
+    $insert_query = mysqli_query($connection, $query);
+
+    if ($insert_query > 0) {
+      $msg = "Images uploaded successfuly";
+      //unlink the file from the uploads folder
+    } else {
+      $msg = "Error!";
+    }
   }
-}}
+}
 ?>
 
 <body>
