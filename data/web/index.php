@@ -24,7 +24,17 @@
 <?php
 $msg = "";
 $dirname = "uploads/";
+array_map('unlink', glob("$dirname/*")); // Remove all files from upload folder
 include('connection.php');
+
+// Get filenames from DB
+$sqlFind = 'SELECT `filename` FROM `alignments`';
+$result = mysqli_query($connection, $sqlFind);
+$db = []; // create empty array
+while ($row = mysqli_fetch_row($result)) {
+  array_push($db, $row[0]);
+}
+
 if (isset($_REQUEST['file-upload'])) {
   for ($i = 0; $i < count($_FILES['multiple_files']['name']); $i++) {
     $filename[] = basename($_FILES['multiple_files']['name'][$i]);
@@ -37,20 +47,13 @@ if (isset($_REQUEST['file-upload'])) {
       continue;
     }
 
-
-
-    // Upload the file to the specified folder
+    // Save the remaining files to the upload folder
     $uploadfile = $_FILES['multiple_files']['tmp_name'][$i];
     $targetpath = $dirname . $filename[$i];
     move_uploaded_file($uploadfile, $targetpath);
 
-    // Check to see if file has been uploaded previously if so skip
-    $sqlFind = 'SELECT `filename` FROM `alignments`';
-    $result = mysqli_query($connection, $sqlFind);
-    $db = []; // create empty array
-    while ($row = mysqli_fetch_row($result))
-      array_push($db, $row[0]);
-    if (array_intersect($filename, $db)) {
+    // Check if filename matches array of DB names
+    if (in_array($filename[$i], $db)) {
       $msg .= "File " . $filename[$i] . " already exists in DB unable to upload<br>";
       continue;
     }
@@ -82,7 +85,6 @@ if (isset($_REQUEST['file-upload'])) {
     }
   }
 }
-array_map('unlink', glob("$dirname/*"));
 ?>
 
 <body>
