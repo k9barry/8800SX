@@ -59,20 +59,7 @@ services:
       - 8888:80
     networks:
       - backend
-  
-  tinyfilemanager:
-    image: tinyfilemanager/tinyfilemanager:master
-    container_name: tinyfilemanager
-    restart: always
-    depends_on:
-      - web
-    volumes:
-      - ./data/web/uploads:/var/www/html/uploads
-    ports:
-      - 8088:80
-    networks:
-      - backend
-        
+         
 networks:
   backend:
     driver: bridge
