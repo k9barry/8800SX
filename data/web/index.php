@@ -22,6 +22,7 @@
 </style>
 
 <?php
+$count = 0;
 $msg = "";
 $dirname = "uploads/";
 array_map('unlink', glob("$dirname/*")); // Remove all files from upload folder
@@ -79,11 +80,15 @@ if (isset($_REQUEST['file-upload'])) {
     $insert_query = mysqli_query($connection, $query);
 
     if ($insert_query > 0) {
+      $count++;
       $msg .= "File " . $filename[$i] . " uploaded successfuly<br>";
     } else {
       $msg .= " File" . $filename[$i] . " Error!<br>";
     }
   }
+}
+if ($count > 0) {
+  $msg .= "<br><b>!!!!! " . $count . " files uploaded successfuly to the DB !!!!!</b><br>";
 }
 ?>
 
@@ -91,6 +96,9 @@ if (isset($_REQUEST['file-upload'])) {
   <div class="container">
     <div class="table-responsive">
       <h2 align="center">Multiple File Upload Form</h2><br />
+      <form align="center" action="http://localhost:8888/index.php?route=/sql&db=viavi&table=alignments&pos=0" target="_blank">
+        <input type="submit" value="phpMyAdmin" class="btn btn-success" />
+      </form>
       <div class="box">
         <form method="post" enctype="multipart/form-data">
           <div class="form-group">
