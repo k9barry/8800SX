@@ -37,10 +37,13 @@ services:
       - ./data/db/logs:/var/log/mysql
       - ./data/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     environment:
-      MYSQL_ROOT_PASSWORD: ChangeThisOnlS7bBCb
-      MYSQL_DATABASE: "${MYSQL_DATABASE}"
-      MYSQL_USER: "${MYSQL_USER}"
-      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+      MYSQL_DATABASE: viavi
+      MYSQL_USER: viavi
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_root_password
+      - db_password
     networks:
       - backend
 
@@ -49,14 +52,20 @@ services:
     container_name: pma
     restart: always
     environment:
-      PMA_HOST: "${PMA_HOST}"
+      PMA_HOST: db
     depends_on:
       - db
     ports:
       - 8888:80
     networks:
       - backend
-         
+
+secrets:
+   db_root_password:
+     file: ./secret/db_root_password.txt
+   db_password:
+     file: ./secret/db_password.txt
+
 networks:
   backend:
     driver: bridge
