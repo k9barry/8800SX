@@ -25,9 +25,6 @@
 $count = 0;
 $msg = "";
 $dirname = "uploads";
-if (is_dir($dirname)) {
-  mkdir('/var/www/html/uploads', 0775, true);
-}
 array_map('unlink', glob("$dirname/*")); // Remove all files from upload folder
 include('connection.php');
 
