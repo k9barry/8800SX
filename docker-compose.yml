@@ -40,7 +40,7 @@ services:
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
       MYSQL_DATABASE: viavi
       MYSQL_USER: viavi
-      MYSQL_PASSWORD: /run/secrets/db_password
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
     secrets:
       - db_root_password
       - db_password
