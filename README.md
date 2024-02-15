@@ -4,7 +4,6 @@ service record is stored in the DB as a BLOB
 
 TO USE: 
 - Copy repo to your environment (docker pull ghcr.io/k9barry/8800sx)
-- Edit /secrets/db_root_password.txt to add secret root password
 - Edit /secrets/db_password.txt to add DB password
 - docker compose up -d
 - After all containers start (may take a minute) goto http://localhost:8080

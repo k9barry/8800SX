@@ -37,12 +37,11 @@ services:
       - ./data/db/logs:/var/log/mysql
       - ./data/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     environment:
-      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+      MYSQL_RANDOM_ROOT_PASSWORD: true
       MYSQL_DATABASE: viavi
       MYSQL_USER: viavi
       MYSQL_PASSWORD_FILE: /run/secrets/db_password
     secrets:
-      - db_root_password
       - db_password
     networks:
       - backend
@@ -61,8 +60,6 @@ services:
       - backend
 
 secrets:
-   db_root_password:
-     file: ./secret/db_root_password.txt
    db_password:
      file: ./secret/db_password.txt
 
