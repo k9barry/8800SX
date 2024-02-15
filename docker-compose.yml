@@ -61,7 +61,7 @@ services:
 
 secrets:
    db_password:
-     file: ./secret/db_password.txt
+     file: ./secrets/db_password.txt
 
 networks:
   backend:
