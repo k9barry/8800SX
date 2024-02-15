@@ -17,7 +17,6 @@ services:
       - backend
 
   php-fpm:
-    #image: php:8.2-fpm
     container_name: php8.2
     # Dockerfile path
     build:
@@ -31,7 +30,6 @@ services:
   db:
     image: mysql
     container_name: db
-    #command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     restart: always
     volumes: 
       - ./data/db/data:/var/lib/mysql
@@ -51,8 +49,6 @@ services:
     restart: always
     environment:
       PMA_HOST: "${PMA_HOST}"
-    #  PMA_USER: "${PMA_USER}"
-    #  PMA_PASSWORD: "${PMA_PASSWORD}"
     depends_on:
       - db
     ports:
