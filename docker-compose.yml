@@ -25,6 +25,8 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./data/web:/var/www/html
+    secrets:
+      - db_password
     networks:
       - backend
 
