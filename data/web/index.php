@@ -24,7 +24,7 @@
 <?php
 $count = 0;
 $msg = "";
-$dirname = "uploads/";
+$dirname = "uploads";
 array_map('unlink', glob("$dirname/*")); // Remove all files from upload folder
 include('connection.php');
 
@@ -50,7 +50,7 @@ if (isset($_REQUEST['file-upload'])) {
 
     // Save the remaining files to the upload folder
     $uploadfile = $_FILES['multiple_files']['tmp_name'][$i];
-    $targetpath = $dirname . $filename[$i];
+    $targetpath = $dirname . "/" . $filename[$i];
     move_uploaded_file($uploadfile, $targetpath);
 
     // Check if filename matches array of DB names
