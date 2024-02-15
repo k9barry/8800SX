@@ -22,7 +22,7 @@ services:
     # Dockerfile path
     build:
       context: .
-      dockerfile: mysql.dockerfile
+      dockerfile: Dockerfile
     volumes:
       - ./data/web:/var/www/html
     networks:
