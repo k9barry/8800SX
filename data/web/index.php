@@ -1,7 +1,7 @@
 <html>
 
 <head>
-  <title>Multiple File Upload Form</title>
+  <title>Viavi 8800SX Database</title>
   <link rel="stylesheet" href="bootstrap.min.css" />
 </head>
 <style>
@@ -95,23 +95,38 @@ if ($count > 0) {
 <body>
   <div class="container">
     <div class="table-responsive">
-      <h2 align="center">Multiple File Upload Form</h2><br />
-      <form align="center" action="http://localhost:8888/index.php?route=/sql&db=viavi&table=alignments&pos=0" target="_blank">
-        <input type="submit" value="phpMyAdmin" class="btn btn-success" />
+      <h2 align="center">Viavi 8800SX Database</h2><br />
+      <form align="center" action="http://localhost:8888/index.php?route=/sql&db=viavi&table=alignments&pos=0" target="_blank" method="POST">
+        <div class="form-group">
+          <input type="submit" value="phpMyAdmin" class="btn btn-success" />
+        </div>
       </form>
       <div class="box">
-        <form method="post" enctype="multipart/form-data">
-          <div class="form-group">
-            <label for="image">Select Multiple Files - then press SUBMIT</label>
-            <input type="file" name="multiple_files[]" class="form-control" multiple required />
-          </div>
-          <div class="form-group">
-            <input type="submit" id="file-upload" name="file-upload" value="Submit" class="btn btn-success" />
-          </div>
-          <p align="center" class="error"><?php if (!empty($msg)) {
-                                            echo $msg;
-                                          } ?></p>
-        </form>
+        <div class="box">
+          <form action="result.php" method="POST">
+            <div class="form-group">
+              <label for="image">Search Database</label>
+              <input type="text" name="serial" size="30" class="form-control">
+            </div>
+            <div class="form-group">
+              <input type="submit" value="Search" class="btn btn-success" />
+            </div>
+          </form>
+        </div>
+        <div class="box">
+          <form method="post" enctype="multipart/form-data">
+            <div class="form-group">
+              <label for="image">Select Multiple Files - then press SUBMIT</label>
+              <input type="file" name="multiple_files[]" class="form-control" multiple required />
+            </div>
+            <div class="form-group">
+              <input type="submit" id="file-upload" name="file-upload" value="Submit" class="btn btn-success" />
+            </div>
+            <p align="center" class="error"><?php if (!empty($msg)) {
+                                              echo $msg;
+                                            } ?></p>
+          </form>
+        </div>
       </div>
     </div>
   </div>
