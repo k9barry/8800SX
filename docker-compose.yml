@@ -26,6 +26,10 @@ services:
     volumes:
       - ./data/web:/var/www/html
       - ./data/web/uploads:/var/www/html/uploads
+    environment:
+      DB_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_password
     networks:
       - backend
 
