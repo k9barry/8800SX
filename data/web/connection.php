@@ -1,12 +1,13 @@
 <?php
-$server = "db";
+
+// Set mysql connect variables
+$host = "db";
 $username = "viavi";
-$password = "8800SX";
+$password = trim(file_get_contents(getenv("DB_PASSWORD_FILE")));
 $database = "viavi";
-$connection = mysqli_connect("$server","$username","$password");
-$select_db = mysqli_select_db($connection, $database);
-if(!$select_db)
-{
-	echo("connection terminated");
+
+$connection = new mysqli($host, $username, $password, $database);
+
+if ($connection->connect_error) {
+	die($connection->connect_error);
 }
-?>
