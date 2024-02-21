@@ -1,4 +1,11 @@
 <?php
+/**
+ * Index file index.php
+ * 
+ * Starts by loading the main.php file then
+ * displays Viavi 8800SX Database search and upload page.
+ * 
+ */
 include('main.php');
 ?>
 

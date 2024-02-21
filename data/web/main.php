@@ -1,4 +1,34 @@
 <?php
+/**
+ * The main.php file does the uploading of the files.
+ * 
+ * mySql table entry order::
+ * 
+ * 1. String $datetime Datetime entry of when viavi test was ran
+ * 2. String $model Model of radio tested
+ * 3. String $serial Serial Number of Model tested
+ * 4. String $file_contents Text file of the results of testing
+ * 5. String $filename[$i] Name of the saved file
+ * 
+ * The order of events is:
+ * 1. ./uploads folder is cleared of contents (unlink)
+ * 2. Load the connection.php file to connect to DB
+ * 3. POST from index.php page calls main.php to upload all selected files
+ * 4. SET and PREPARE the INSERT statement
+ * 5. Array $db Get all filenames in the DB and place in array
+ * 6. Loop thru upladed files and get info to put into DB
+ * 7. Skip all files not ending in .txt add $msg stating such
+ * 8. Save the remaining files to the upload folder
+ * 9. Check if uploaded filename is not in array of DB names,
+ *      if it is then file is a duplicate and can be skipped,
+ *      add $msg stating such
+ * 10. If the filename is NOT in the DB we need to add it,
+ *      EXPLODE the $filename[$i] at the "-" to get the $filevalue
+ * 11. Fix the datetime from the filename to insert into DB
+ * 12. Set Strings to insert into DB
+ * 13. Bind the mySql statement and execute it to enter into DB
+ * 
+ */
 $count = 0;  //Get count of successfully uploaded records
 $msg = "";
 $dirname = "uploads";
@@ -23,7 +53,7 @@ if (isset($_REQUEST['file-upload'])) {
   for ($i = 0; $i < count($_FILES['multiple_files']['name']); $i++) {
     $filename[] = basename($_FILES['multiple_files']['name'][$i]);
 
-    //skip all files not ending in .txt
+    //Skip all files not ending in .txt
     $path_part = pathinfo($filename[$i]);
     $path_ext = $path_part['extension'];
     if ($path_ext <> "txt") {
@@ -47,11 +77,11 @@ if (isset($_REQUEST['file-upload'])) {
         $minute = substr($filevalue[3], 2, 2);
         $second = substr($filevalue[3], 4, 2);
 
-        // Set variables to insert into DB
+        // Set Strings to insert into DB
         $datetime = "" . $year . "-" . $month . "-" . $day . " " . $hour . ":" . $minute . ":" . $second . "";
         $model = $filevalue[0];
         $serial = $filevalue[1];
-        $file_contents = file_get_contents($targetpath); // Read the file contents to string variable once it been uploaded for insert into DB
+        $file_contents = file_get_contents($targetpath); // Read the file contents to String String once it been uploaded for insert into DB
 
         // Bind the statement and execute
         $statement->bind_param("sssss", $datetime, $model, $serial, $file_contents, $filename[$i]);
