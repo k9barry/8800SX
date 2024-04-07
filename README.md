@@ -1,3 +1,4 @@
+[![Docker Image CI](https://github.com/k9barry/8800SX/actions/workflows/docker-image.yml/badge.svg)](https://github.com/k9barry/8800SX/actions/workflows/docker-image.yml)
 Docker compose project to take to output files from a Viavi 8800SX service monitor
 and parse the information into a mySql database. Additionally a copy of the 
 service record is stored in the DB as a BLOB.
