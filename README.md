@@ -10,7 +10,7 @@ TO USE:
 - After all containers start (may take a minute) go to http://localhost:8080
 - On the Viavi 8800SX Database page select all the files from the Viavi service monitor 
 you want to import and press "Submit"
-- To search for a record type and part of the serial number in the Seatch box.
+- To search for a record type any part of the serial number in the Seatch box.
 - Once the upload completes you can press the phpMyAdmin button to open the DB
 - Navigate to the viavi database
 - DB user is "viavi" use the search button to search the DB serial numbers
