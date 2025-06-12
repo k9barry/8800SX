@@ -71,7 +71,7 @@ if (isset($_REQUEST['file-upload'])) {
         // Fix the datetime from the filename to insert into DB
         $filevalue = explode('-', $filename[$i]);
         $check_filename = substr($filevalue[2], 4, 4);
-        if $check_filename <> "20" {
+        if ($check_filename <> "20") {
           $month = substr($filevalue[2], 0, 2);
           $day = substr($filevalue[2], 2, 2);
           $year = substr($filevalue[2], 4, 4);
