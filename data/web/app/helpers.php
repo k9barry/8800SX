@@ -95,7 +95,8 @@ function print_error_if_exists($error)
 function convert_date($date_str)
 {
     if (isset($date_str)) {
-        $date = date('d-m-Y', strtotime($date_str));
+        //$date = date('d-m-Y', strtotime($date_str));
+        $date = date('Y-m-d', strtotime($date_str));
         return htmlspecialchars($date);
     }
 }
@@ -103,7 +104,8 @@ function convert_date($date_str)
 function convert_datetime($date_str)
 {
     if (isset($date_str)) {
-        $date = date('d-m-Y H:i:s', strtotime($date_str));
+        //$date = date('d-m-Y H:i:s', strtotime($date_str));
+        $date = date('Y-m-d H:i:s', strtotime($date_str));
         return htmlspecialchars($date);
     }
 }
