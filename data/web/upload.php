@@ -37,7 +37,7 @@ include('main.php');
         <div class="table-responsive">
             <h2 align="center">Viavi 8800SX Database</h2><br />
             <form align="center" action="http://localhost:8080/app/alignments-index.php"
-                target="_blank" method="POST">
+                target="_self" method="POST">
                 <div class="form-group">
                     <input type="submit" value="Alignment Database" class="btn btn-success" />
                 </div>
