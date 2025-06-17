@@ -13,7 +13,7 @@
  * The order of events is:
  * 1. ./uploads folder is cleared of contents (unlink)
  * 2. Load the connection.php file to connect to DB
- * 3. POST from index.php page calls main.php to upload all selected files
+ * 3. POST from upload.php page calls main.php to upload all selected files
  * 4. SET and PREPARE the INSERT statement
  * 5. Array $db Get all filenames in the DB and place in array
  * 6. Loop thru upladed files and get info to put into DB

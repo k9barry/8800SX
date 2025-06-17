@@ -2,7 +2,7 @@
 /**
  * Search results file results.php
  * 
- * The results file takes the POST value from the index.php page
+ * The results file takes the POST value from the upload.php page
  * and searched the DB for a %LIKE% serial (number) value and returns the results
  */
 include('connection.php');
