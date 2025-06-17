@@ -37,7 +37,7 @@ $tables_and_columns_names = array (
       'file' => 
       array (
         'columndisplay' => 'file',
-        'is_file' => 1,
+        'is_file' => 0,
         'columnvisible' => 0,
         'columninpreview' => 0,
       ),

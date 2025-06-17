@@ -131,10 +131,10 @@ if(isset($_GET["id"]) && !empty($_GET["id"])){
 									    $end_link_file = $is_file ? "</a>" : "";
 									}
 									?>
-									<div class="form-group">
+									<div class="form-group-sm" style="white-space:pre; font-size: 12px">
 									    <h4>file*</h4>
 									    <?php if ($has_link_file): ?>
-									        <p class="form-control-static"><?php echo $link_file ?><?php echo htmlspecialchars($row["file"] ?? ""); ?><?php echo $end_link_file ?></p>
+									       <p class="form-control-static"><?php echo $link_file ?><?php echo htmlspecialchars($row["file"] ?? ""); ?><?php echo $end_link_file ?></p>
 									    <?php endif ?>
 									</div>									<?php
 									// Check if the column is file upload

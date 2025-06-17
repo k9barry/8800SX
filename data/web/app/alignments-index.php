@@ -37,6 +37,7 @@
                         <a href="alignments-create.php" class="btn btn-success float-right"><?php translate('Add New Record') ?></a>
                         <a href="alignments-index.php" class="btn btn-info float-right mr-2"><?php translate('Reset View') ?></a>
                         <a href="javascript:history.back()" class="btn btn-secondary float-right mr-2"><?php translate('Back') ?></a>
+                        <a href="../index.php" class="btn btn-primary float-right mr-2"><?php translate('Upload Files') ?></a>
                     </div>
 
                     <div class="form-row">
@@ -45,7 +46,6 @@
                           <input type="text" class="form-control" placeholder="<?php translate('Search this table') ?>" name="search">
                         </div>
                     </div>
-                        </form>
                     <br>
 
                     <?php
@@ -72,13 +72,13 @@
                     //Column sorting on column name
                     $columns = array('id', 'datetime', 'model', 'serial', 'entered', 'filename');
                     // Order by primary key on default
-                    $order = 'id';
+                    $order = 'datetime';
                     if (isset($_GET['order']) && in_array($_GET['order'], $columns)) {
                         $order = $_GET['order'];
                     }
 
                     //Column sort order
-                    $sortBy = array('asc', 'desc'); $sort = 'asc';
+                    $sortBy = array('asc', 'desc'); $sort = 'desc';
                     if (isset($_GET['sort']) && in_array($_GET['sort'], $sortBy)) {
                           if($_GET['sort']=='asc') {
                             $sort='asc';

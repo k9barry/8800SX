@@ -39,11 +39,11 @@ include('main.php');
             <form align="center" action="http://localhost:8080/app/alignments-index.php"
                 target="_blank" method="POST">
                 <div class="form-group">
-                    <input type="submit" value="Database" class="btn btn-success" />
+                    <input type="submit" value="Alignment Database" class="btn btn-success" />
                 </div>
             </form>
             <div class="box">
-                <div class="box">
+                <!--<div class="box">
                     <form action="result.php" method="POST">
                         <div class="form-group">
                             <label for="image">Search Database</label>
@@ -53,7 +53,7 @@ include('main.php');
                             <input type="submit" value="Search" class="btn btn-success" />
                         </div>
                     </form>
-                </div>
+                </div>-->
                 <div class="box">
                     <form method="post" enctype="multipart/form-data">
                         <div class="form-group">
