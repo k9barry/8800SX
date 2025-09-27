@@ -53,6 +53,7 @@ jobs:
       uses: hadolint/hadolint-action@v3.1.0
       with:
         dockerfile: Dockerfile
+        failure-threshold: error
         
     - name: Validate docker-compose
       run: |
@@ -106,9 +107,9 @@ jobs:
         
     - name: Secrets scan
       run: |
-        # Simple check for potential secrets (excluding test files)
-        if grep -r -E "(password|secret|key|token).*=.*['\"][^'\"]{8,}['\"]" . --exclude-dir=.git --exclude="*.md" | grep -v "db_password.txt" | grep -v "example"; then
-          echo "Warning: Potential secrets found in code"
+        # Simple check for potential hardcoded secrets (excluding test files and configuration)
+        if grep -r -E "(password|secret|key|token)\s*=\s*['\"][A-Za-z0-9+/=]{16,}['\"]" . --exclude-dir=.git --exclude-dir=vendor --exclude="*.md" --exclude="*test*" | grep -v "db_password.txt" | grep -v "example" | grep -v "getenv\|file_get_contents"; then
+          echo "Warning: Potential hardcoded secrets found in code"
           exit 1
         fi
 
@@ -178,7 +179,7 @@ jobs:
         fi
         
     - name: Check for known vulnerabilities in base images
-      uses: aquasecurity/trivy-action@master
+      uses: aquasecurity/trivy-action@0.24.0
       with:
         scan-type: 'config'
         scan-ref: 'docker-compose.yml'

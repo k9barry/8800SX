@@ -227,8 +227,8 @@ if(isset($_GET["id"]) && !empty($_GET["id"])){
                         </p>
                         <hr>
                         <p>
-                            <a href="alignments-read.php?id=<?php echo $_GET["id"];?>" class="btn btn-info"><?php translate('View Record') ?></a>
-                            <a href="alignments-delete.php?id=<?php echo $_GET["id"];?>" class="btn btn-danger"><?php translate('Delete Record') ?></a>
+                            <a href="alignments-read.php?id=<?php echo htmlspecialchars($_GET["id"]);?>" class="btn btn-info"><?php translate('View Record') ?></a>
+                            <a href="alignments-delete.php?id=<?php echo htmlspecialchars($_GET["id"]);?>" class="btn btn-danger"><?php translate('Delete Record') ?></a>
                             <a href="alignments-index.php" class="btn btn-primary"><?php translate('Back to List') ?></a>
                         </p>
                         <p><?php translate('required_fiels_instructions') ?></p>
