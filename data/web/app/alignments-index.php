@@ -43,7 +43,7 @@
                     <div class="form-row">
                         <form action="alignments-index.php" method="get">
                         <div class="col">
-                          <input type="text" class="form-control" placeholder="<?php translate('Search this table') ?>" name="search">
+                          <input type="text" class="form-control" placeholder="<?php translate('Search this table') ?>" name="search" value="<?php echo htmlspecialchars($search); ?>">
                         </div>
                     </div>
                     <br>
@@ -163,27 +163,27 @@
                                         <?php 									$columnname = "id";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "asc" ? "desc" : "asc";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "desc" ? "asc" : $sort_link;
-									echo "<th><a href=?search=$search&order=id&sort=".$sort_link.">id</a></th>";
+									echo "<th><a href=?search=" . urlencode($search) . "&order=id&sort=".$sort_link.">id</a></th>";
 									$columnname = "datetime";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "asc" ? "desc" : "asc";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "desc" ? "asc" : $sort_link;
-									echo "<th><a href=?search=$search&order=datetime&sort=".$sort_link.">datetime</a></th>";
+									echo "<th><a href=?search=" . urlencode($search) . "&order=datetime&sort=".$sort_link.">datetime</a></th>";
 									$columnname = "model";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "asc" ? "desc" : "asc";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "desc" ? "asc" : $sort_link;
-									echo "<th><a href=?search=$search&order=model&sort=".$sort_link.">model</a></th>";
+									echo "<th><a href=?search=" . urlencode($search) . "&order=model&sort=".$sort_link.">model</a></th>";
 									$columnname = "serial";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "asc" ? "desc" : "asc";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "desc" ? "asc" : $sort_link;
-									echo "<th><a href=?search=$search&order=serial&sort=".$sort_link.">serial</a></th>";
+									echo "<th><a href=?search=" . urlencode($search) . "&order=serial&sort=".$sort_link.">serial</a></th>";
 									$columnname = "entered";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "asc" ? "desc" : "asc";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "desc" ? "asc" : $sort_link;
-									echo "<th><a href=?search=$search&order=entered&sort=".$sort_link.">entered</a></th>";
+									echo "<th><a href=?search=" . urlencode($search) . "&order=entered&sort=".$sort_link.">entered</a></th>";
 									$columnname = "filename";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "asc" ? "desc" : "asc";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "desc" ? "asc" : $sort_link;
-									echo "<th><a href=?search=$search&order=filename&sort=".$sort_link.">filename</a></th>";
+									echo "<th><a href=?search=" . urlencode($search) . "&order=filename&sort=".$sort_link.">filename</a></th>";
  ?>
                                         <th><?php translate('Actions'); ?></th>
                                     </tr>

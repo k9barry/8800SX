@@ -19,5 +19,12 @@ $database = "viavi";
 $connection = new mysqli($host, $username, $password, $database);
 
 if ($connection->connect_error) {
-	die($connection->connect_error);
+    error_log("Database connection failed: " . $connection->connect_error);
+    die("Database connection failed. Please try again later.");
+}
+
+// Set charset to prevent character set confusion attacks
+if (!$connection->set_charset("utf8mb4")) {
+    error_log("Error loading character set utf8mb4: " . $connection->error);
+    die("Database configuration error.");
 }

@@ -11,8 +11,15 @@ function parse_columns($table_name, $postdata)
     // get all columns, including the ones not sent by the CRUD form
     $sql = "SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT, EXTRA
             FROM INFORMATION_SCHEMA.COLUMNS
-            WHERE table_name = '" . $table_name . "'";
-    $result = mysqli_query($link, $sql);
+            WHERE table_name = ?";
+    $stmt = mysqli_prepare($link, $sql);
+    if (!$stmt) {
+        error_log("Failed to prepare statement: " . mysqli_error($link));
+        return $vars;
+    }
+    mysqli_stmt_bind_param($stmt, "s", $table_name);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
     while ($row = mysqli_fetch_assoc($result)) {
 
         $debug = 0;
@@ -54,6 +61,7 @@ function parse_columns($table_name, $postdata)
         // check that fieldname was set before sending values to pdo
         $vars[$row['COLUMN_NAME']] = isset($_POST[$row['COLUMN_NAME']]) && $_POST[$row['COLUMN_NAME']] ? trim($_POST[$row['COLUMN_NAME']]) : $default;
     }
+    mysqli_stmt_close($stmt);
     return $vars;
 }
 
@@ -65,9 +73,16 @@ function get_columns_attributes($table_name, $column)
     global $link;
     $sql = "SELECT COLUMN_DEFAULT, COLUMN_COMMENT
             FROM INFORMATION_SCHEMA.COLUMNS
-            WHERE table_name = '" . $table_name . "'
-            AND column_name = '" . $column . "'";
-    $result = mysqli_query($link, $sql);
+            WHERE table_name = ?
+            AND column_name = ?";
+    $stmt = mysqli_prepare($link, $sql);
+    if (!$stmt) {
+        error_log("Failed to prepare statement: " . mysqli_error($link));
+        return null;
+    }
+    mysqli_stmt_bind_param($stmt, "ss", $table_name, $column);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
     while ($row = mysqli_fetch_assoc($result)) {
         $debug = 0;
         if ($debug) {
@@ -75,8 +90,11 @@ function get_columns_attributes($table_name, $column)
             print_r($row);
             echo "</pre>";
         }
+        mysqli_stmt_close($stmt);
         return $row;
     }
+    mysqli_stmt_close($stmt);
+    return null;
 }
 
 function print_error_if_exists($error)
@@ -276,4 +294,110 @@ function truncate($string, $length = 15) {
     }
 
     return $truncated;
+}
+
+// CSRF Protection Functions
+function generateCSRFToken() {
+    if (session_status() === PHP_SESSION_NONE) {
+        // Only set cookie params if session not already started
+        session_set_cookie_params([
+            'lifetime' => 0,
+            'path' => '/',
+            'domain' => '',
+            'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on',
+            'httponly' => true,
+            'samesite' => 'Strict'
+        ]);
+        session_start();
+    }
+    
+    if (!isset($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+function validateCSRFToken($token) {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
+}
+
+function getCSRFHiddenInput() {
+    $token = generateCSRFToken();
+    return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($token) . '">';
+}
+
+// Input validation and sanitization functions
+function validateLength($value, $maxLength) {
+    return mb_strlen($value) <= $maxLength;
+}
+
+function sanitizeFilename($filename) {
+    // Remove path traversal attempts
+    $filename = basename($filename);
+    // Remove dangerous characters but keep basic filename chars
+    $filename = preg_replace('/[^a-zA-Z0-9\-_\.]/', '', $filename);
+    // Limit length
+    return substr($filename, 0, 255);
+}
+
+function validateEmail($email) {
+    return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+}
+
+function validateDate($date, $format = 'Y-m-d H:i:s') {
+    $d = DateTime::createFromFormat($format, $date);
+    return $d && $d->format($format) === $date;
+}
+
+function validateFileExtension($filename, $allowed_extensions = ['txt']) {
+    $path_info = pathinfo($filename);
+    $extension = strtolower($path_info['extension'] ?? '');
+    return in_array($extension, $allowed_extensions);
+}
+
+function validateFileMimeType($temp_file, $allowed_types = ['text/plain']) {
+    if (!file_exists($temp_file)) {
+        return false;
+    }
+    
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime_type = finfo_file($finfo, $temp_file);
+    finfo_close($finfo);
+    
+    return in_array($mime_type, $allowed_types);
+}
+
+// Simple rate limiting function
+function checkRateLimit($action = 'default', $max_attempts = 4, $time_window = 60) {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    
+    $client_ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $rate_key = "rate_limit_{$action}_{$client_ip}";
+    $current_time = time();
+    
+    if (!isset($_SESSION[$rate_key])) {
+        $_SESSION[$rate_key] = array('count' => 0, 'first_attempt' => $current_time);
+    }
+    
+    $rate_data = $_SESSION[$rate_key];
+    
+    // Reset if time window has passed
+    if ($current_time - $rate_data['first_attempt'] > $time_window) {
+        $_SESSION[$rate_key] = array('count' => 1, 'first_attempt' => $current_time);
+        return true;
+    }
+    
+    // Check if limit exceeded
+    if ($rate_data['count'] >= $max_attempts) {
+        return false;
+    }
+    
+    // Increment counter
+    $_SESSION[$rate_key]['count']++;
+    return true;
 }

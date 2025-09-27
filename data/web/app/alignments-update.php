@@ -5,6 +5,12 @@ require_once('config-tables-columns.php');
 
 // Processing form data when form is submitted
 if(isset($_POST["id"]) && !empty($_POST["id"])){
+    
+    // Validate CSRF token first
+    if (!validateCSRFToken($_POST['csrf_token'] ?? '')) {
+        $error = "Invalid security token. Please try again.";
+    } else {
+    
     // Get hidden input value
     $id = $_POST["id"];
 
@@ -95,6 +101,7 @@ if(isset($_POST["id"]) && !empty($_POST["id"])){
         }
 
     }
+    }
 }
 // Check existence of id parameter before processing further
 $_GET["id"] = trim($_GET["id"]);
@@ -141,7 +148,8 @@ if(isset($_GET["id"]) && !empty($_GET["id"])){
             }
 
         } else{
-            translate('stmt_error') . "<br>".$stmt->error;
+            error_log("Statement execution failed: " . $stmt->error);
+            $error = "Unable to update record. Please try again.";
         }
     }
 
@@ -175,6 +183,7 @@ if(isset($_GET["id"]) && !empty($_GET["id"])){
                     <?php print_error_if_exists(@$error); ?>
                     <p><?php translate('update_record_instructions') ?></p>
                     <form action="<?php echo htmlspecialchars(basename($_SERVER['REQUEST_URI'])); ?>" method="post" enctype="multipart/form-data">
+                        <?php echo getCSRFHiddenInput(); ?>
 
                         <div class="form-group">
                                             <label for="datetime">datetime*</label>

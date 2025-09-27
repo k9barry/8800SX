@@ -33,15 +33,20 @@ If you discover a security vulnerability in the 8800SX project, please report it
 
 ### Application Security
 
-- **SQL Injection Prevention**: All database queries use prepared statements
+- **SQL Injection Prevention**: All database queries use prepared statements with proper parameter binding
+- **CSRF Protection**: All forms include CSRF tokens to prevent cross-site request forgery attacks
+- **XSS Prevention**: All user inputs are properly escaped using htmlspecialchars() and urlencode()
 - **File Upload Security**: 
   - File type validation (only .txt files allowed)
+  - MIME type validation for uploaded files
   - File size limits (10MB maximum)
   - Filename sanitization to prevent directory traversal
   - Upload directory protection with index.php
-- **Input Validation**: All user inputs are sanitized and validated
+- **Input Validation**: All user inputs are sanitized and validated with length restrictions
 - **Output Encoding**: HTML special characters are properly escaped
 - **Error Handling**: Database errors are logged, not exposed to users
+- **Rate Limiting**: Basic rate limiting for uploads (5/hour) and searches (20/hour)
+- **Session Security**: Secure cookie settings with HttpOnly and SameSite attributes
 
 ### Infrastructure Security
 
@@ -86,8 +91,9 @@ If you discover a security vulnerability in the 8800SX project, please report it
 
 1. **File Storage**: Uploaded files are stored in the database as BLOBs and in the filesystem
 2. **Authentication**: Currently no built-in user authentication system
-3. **Rate Limiting**: No built-in rate limiting for uploads
-4. **Audit Logging**: Basic logging only, consider adding comprehensive audit trails
+3. **Rate Limiting**: Basic rate limiting implemented (may need enhancement for production)
+4. **Audit Logging**: Basic error logging only, consider adding comprehensive audit trails
+5. **Session Management**: Secure session handling implemented with proper cookie settings
 
 ## Security Updates
 
