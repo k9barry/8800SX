@@ -6,13 +6,137 @@ on:
   pull_request:
     branches: [ "main" ]
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test and Lint
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: mysqli, curl
+        tools: composer
+        
+    - name: Validate composer.json if exists
+      run: |
+        if [ -f composer.json ]; then
+          composer validate --strict
+        fi
+        
+    - name: PHP Syntax Check
+      run: find data/web -name "*.php" -exec php -l {} \;
+      
+    - name: Docker Compose Config Validation
+      run: docker compose config
+
+  security:
+    runs-on: ubuntu-latest
+    name: Security Scan
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
 
   build:
-
     runs-on: ubuntu-latest
-
+    needs: [test, security]
+    name: Build and Test Docker Images
+    
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Log in to Container Registry
+      if: github.event_name != 'pull_request'
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha
+          type=raw,value=latest,enable={{is_default_branch}}
+          
+    - name: Build Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        push: ${{ github.event_name != 'pull_request' }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        
+    - name: Test Docker Compose
+      run: |
+        # Create a test password file
+        echo "test_password_123" > secrets/db_password.txt
+        
+        # Start services
+        docker compose up -d --wait
+        
+        # Wait for services to be healthy
+        timeout 120 bash -c '
+          while ! docker compose ps | grep -q "healthy"; do
+            echo "Waiting for services to be healthy..."
+            sleep 5
+          done
+        '
+        
+        # Test web interface
+        curl -f http://localhost:8080 || exit 1
+        
+        # Test database connection
+        docker compose exec -T db mysql -u viavi -ptest_password_123 viavi -e "SHOW TABLES;" || exit 1
+        
+        # Cleanup
+        docker compose down -v
+        
+    - name: Scan Docker image for vulnerabilities
+      if: github.event_name != 'pull_request'
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ steps.meta.outputs.tags }}
+        format: 'sarif'
+        output: 'docker-trivy-results.sarif'
+        
+    - name: Upload Docker scan results
+      if: github.event_name != 'pull_request'
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: 'docker-trivy-results.sarif'

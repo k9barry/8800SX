@@ -1,0 +1,190 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  php-quality:
+    runs-on: ubuntu-latest
+    name: PHP Code Quality
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: mysqli, curl
+        tools: composer, phpstan, psalm
+        
+    - name: Install PHP_CodeSniffer
+      run: composer global require "squizlabs/php_codesniffer=*"
+      
+    - name: Add composer bin to PATH
+      run: echo "$HOME/.composer/vendor/bin" >> $GITHUB_PATH
+      
+    - name: PHP Syntax Check
+      run: |
+        find data/web -name "*.php" -print0 | xargs -0 -n1 -P4 php -l
+        
+    - name: PHP CodeSniffer (PSR-12)
+      run: |
+        phpcs --standard=PSR12 --extensions=php --ignore=*/vendor/*,*/node_modules/* data/web/ || true
+        
+    - name: PHP Mess Detector
+      run: |
+        composer global require phpmd/phpmd
+        phpmd data/web text cleancode,codesize,controversial,design,naming,unusedcode || true
+
+  docker-quality:
+    runs-on: ubuntu-latest
+    name: Docker Quality
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Lint Dockerfile
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: Dockerfile
+        
+    - name: Lint secondary Dockerfile
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: data/web/Dockerfile
+        
+    - name: Validate docker-compose
+      run: |
+        docker compose config
+        docker compose config --quiet
+        
+    - name: Check for Docker best practices
+      run: |
+        # Check for non-root user
+        grep -q "USER www-data" Dockerfile || { echo "Warning: Dockerfile should use non-root user"; exit 1; }
+        
+        # Check for health checks
+        grep -q "HEALTHCHECK" Dockerfile || { echo "Warning: Dockerfile should include health check"; exit 1; }
+
+  security:
+    runs-on: ubuntu-latest
+    name: Security Analysis
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run Bandit Security Linter for Docker
+      run: |
+        # Check for common security issues in config files
+        echo "Checking for hardcoded passwords..."
+        if grep -r "password.*=" data/web/ --include="*.php" | grep -v "getenv\|file_get_contents" | grep -v "PASSWORD_FILE"; then
+          echo "Warning: Potential hardcoded passwords found"
+          exit 1
+        fi
+        
+        echo "Checking for SQL injection patterns..."
+        if grep -r "\$.*\$" data/web/ --include="*.php" | grep -E "(SELECT|INSERT|UPDATE|DELETE).*\\\$"; then
+          echo "Warning: Potential SQL injection patterns found"
+          exit 1
+        fi
+        
+        echo "Checking for XSS vulnerabilities..."
+        if grep -r "echo.*\$_" data/web/ --include="*.php" | grep -v "htmlspecialchars\|htmlentities"; then
+          echo "Warning: Potential XSS vulnerabilities found"
+          exit 1
+        fi
+        
+    - name: Check file permissions
+      run: |
+        # Check for world-writable files
+        find . -type f -perm -002 -ls | grep -v ".git" && {
+          echo "Error: World-writable files found"
+          exit 1
+        } || echo "No world-writable files found"
+        
+    - name: Secrets scan
+      run: |
+        # Simple check for potential secrets (excluding test files)
+        if grep -r -E "(password|secret|key|token).*=.*['\"][^'\"]{8,}['\"]" . --exclude-dir=.git --exclude="*.md" | grep -v "db_password.txt" | grep -v "example"; then
+          echo "Warning: Potential secrets found in code"
+          exit 1
+        fi
+
+  documentation:
+    runs-on: ubuntu-latest
+    name: Documentation Quality
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install markdownlint
+      run: npm install -g markdownlint-cli
+      
+    - name: Lint Markdown files
+      run: |
+        markdownlint README.md SECURITY.md || true
+        
+    - name: Check for required documentation
+      run: |
+        files=("README.md" "SECURITY.md" "LICENSE")
+        for file in "${files[@]}"; do
+          if [[ ! -f "$file" ]]; then
+            echo "Error: Required file $file is missing"
+            exit 1
+          fi
+        done
+        
+        # Check README completeness
+        required_sections=("Features" "Requirements" "Quick Start" "Usage" "Security")
+        for section in "${required_sections[@]}"; do
+          if ! grep -q "$section" README.md; then
+            echo "Warning: README.md is missing section: $section"
+          fi
+        done
+
+  dependencies:
+    runs-on: ubuntu-latest
+    name: Dependency Check
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check Docker image versions
+      run: |
+        # Check if we're using latest stable versions
+        echo "Checking Docker image versions..."
+        
+        # Extract versions from docker-compose.yml
+        php_version=$(grep "php:" Dockerfile | head -1 | cut -d':' -f2 | cut -d'-' -f1)
+        mysql_version=$(grep "mysql:" docker-compose.yml | cut -d':' -f3)
+        nginx_version=$(grep "nginx:" docker-compose.yml | cut -d':' -f3)
+        
+        echo "PHP version: $php_version"
+        echo "MySQL version: $mysql_version"  
+        echo "Nginx version: $nginx_version"
+        
+        # Check for potential version issues
+        if [[ "$php_version" < "8.1" ]]; then
+          echo "Warning: PHP version might be outdated"
+        fi
+        
+    - name: Check for known vulnerabilities in base images
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'config'
+        scan-ref: 'docker-compose.yml'
+        format: 'table'
