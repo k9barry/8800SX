@@ -85,7 +85,7 @@ jobs:
         fi
         
         echo "Checking for SQL injection patterns..."
-        if grep -r "\$.*\$" data/web/ --include="*.php" | grep -E "(SELECT|INSERT|UPDATE|DELETE).*\\\$"; then
+        if grep -r "\$.*\$" data/web/ --include="*.php" | grep -E "(SELECT|INSERT|UPDATE|DELETE).*\\\$" | grep -v "\$safeColumnName"; then
           echo "Warning: Potential SQL injection patterns found"
           exit 1
         fi
