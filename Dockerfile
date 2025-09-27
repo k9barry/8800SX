@@ -3,7 +3,7 @@ FROM php:8.3-fpm-alpine
 
 # Install system dependencies and PHP extensions
 RUN apk add --no-cache \
-    curl \
+    curl=8.7.1-r0 \
     && docker-php-ext-install mysqli \
     && docker-php-ext-enable mysqli
 
