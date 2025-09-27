@@ -54,6 +54,8 @@ vendor/
 coverage/
 .nyc_output/
 .phpunit.result.cache
+.phpunit.cache/
+tests/reports/
 
 # Build artifacts  
 dist/
