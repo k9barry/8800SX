@@ -25,6 +25,13 @@ if(isset($_POST["id"]) && !empty($_POST["id"])){
 
     if (!empty($fileColumns)) {
         foreach ($fileColumns as $columnName) {
+            // Before using $columnName, validate it
+            $validColumns = array_keys($tables_and_columns_names['alignments']['columns']);
+            if (!in_array($columnName, $validColumns, true)) {
+                // Handle invalid column name
+                header("location: error.php");
+                exit();
+            }
 
             $sql = "SELECT `" . $columnName . "`
                     FROM `alignments`
