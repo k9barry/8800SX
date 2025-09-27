@@ -117,7 +117,7 @@ jobs:
         
         # Wait for services to be healthy
         timeout 120 bash -c '
-          while ! docker compose ps --format json 2>/dev/null | jq -r ".[].Health // \"starting\"" | grep -q "healthy"; do
+          while ! docker compose ps | grep -q "healthy"; do
             echo "Waiting for services to be healthy..."
             docker compose ps
             sleep 5
