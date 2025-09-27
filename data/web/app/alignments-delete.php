@@ -33,7 +33,7 @@ if(isset($_POST["id"]) && !empty($_POST["id"])){
             }
             // Sanitize column name for SQL identifier
             $safeColumnName = "`" . str_replace("`", "``", $columnName) . "`";
-            $sql = "SELECT $safeColumnName FROM `alignments` WHERE `id` = ?";
+            $sql = 'SELECT ' . $safeColumnName . ' FROM `alignments` WHERE `id` = ?';
 
             if ($stmt = mysqli_prepare($link, $sql)) {
                 // Set parameters
