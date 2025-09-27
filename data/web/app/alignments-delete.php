@@ -6,6 +6,12 @@ require_once('config-tables-columns.php');
 // Process delete operation after confirmation
 if(isset($_POST["id"]) && !empty($_POST["id"])){
 
+    // Validate CSRF token first
+    if (!validateCSRFToken($_POST['csrf_token'] ?? '')) {
+        header("location: error.php");
+        exit();
+    }
+
 
     // Find uploaded files references for deletion
     $fileColumns = [];
@@ -124,6 +130,7 @@ if(isset($_POST["id"]) && !empty($_POST["id"])){
                         <h1><?php translate ('Delete Record') ?></h1>
                     </div>
                     <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) . "?id=" . $_GET["id"]; ?>" method="post">
+                    <?php echo getCSRFHiddenInput(); ?>
                     <?php print_error_if_exists(@$error); ?>
                         <div class="alert alert-danger fade-in">
                             <input type="hidden" name="id" value="<?php echo trim($_GET["id"]); ?>"/>

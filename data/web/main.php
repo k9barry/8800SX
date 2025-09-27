@@ -46,6 +46,7 @@ if (!file_exists($index_file)) {
 
 array_map('unlink', glob("$dirname/*")); // Remove all files from upload folder
 include('connection.php');
+include('app/helpers.php');
 
 // Set INSERT statement and prepare
 $sql = "INSERT INTO alignments (datetime, model, serial, file, filename) VALUES (?, ?, ?, ?, ?)";
@@ -70,6 +71,10 @@ while ($row = $result->fetch_row()) {
 $stmt->close();
 
 if (isset($_REQUEST['file-upload'])) {
+  // Check rate limiting for uploads (max 5 uploads per hour)
+  if (!checkRateLimit('file_upload', 5, 3600)) {
+    $msg .= "Too many upload attempts. Please wait before trying again.<br>";
+  } else {
   // Validate that files were actually uploaded
   if (!isset($_FILES['multiple_files']) || !is_array($_FILES['multiple_files']['name'])) {
     $msg .= "No files were uploaded.<br>";
@@ -87,22 +92,21 @@ if (isset($_REQUEST['file-upload'])) {
         continue;
       }
       
-      // Sanitize filename to prevent directory traversal
+      // Sanitize filename to prevent directory traversal and improve security
       $original_filename = $_FILES['multiple_files']['name'][$i];
-      $filename[] = basename($original_filename);
-      $filename[$i] = preg_replace('/[^a-zA-Z0-9\-_\.]/', '', $filename[$i]); // Remove dangerous characters
+      $filename[] = sanitizeFilename($original_filename);
       
-      // Validate filename length
-      if (strlen($filename[$i]) > 255) {
-        $msg .= "Filename too long: " . htmlspecialchars($original_filename) . "<br>";
+      // Validate filename length after sanitization
+      if (strlen($filename[$i]) > 255 || strlen($filename[$i]) == 0) {
+        $msg .= "Invalid filename: " . htmlspecialchars($original_filename) . "<br>";
         continue;
       }
 
-      //Skip all files not ending in .txt
-      $path_part = pathinfo($filename[$i]);
-      $path_ext = strtolower($path_part['extension'] ?? '');
-      if ($path_ext !== "txt") {
+      //Skip all files not ending in .txt and validate MIME type
+      if (!validateFileExtension($filename[$i], ['txt'])) {
         $msg .= "File " . htmlspecialchars($filename[$i]) . " does not end in '.txt' unable to upload<br>";
+      } elseif (!validateFileMimeType($tempname, ['text/plain'])) {
+        $msg .= "File " . htmlspecialchars($filename[$i]) . " is not a valid text file<br>";
       } else {
         // Validate file size (e.g., max 10MB)
         if ($_FILES['multiple_files']['size'][$i] > 10 * 1024 * 1024) {
@@ -182,10 +186,25 @@ if (isset($_REQUEST['file-upload'])) {
             continue;
           }
 
-          // Set Strings to insert into DB
+          // Set Strings to insert into DB with validation
           $datetime = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+          
+          // Validate the constructed datetime
+          if (!validateDate($datetime)) {
+            $msg .= "File " . htmlspecialchars($filename[$i]) . " has invalid datetime format<br>";
+            unlink($targetpath); // Clean up
+            continue;
+          }
+          
           $model = htmlspecialchars($filevalue[0]);
           $serial = htmlspecialchars($filevalue[1]);
+          
+          // Additional validation for model and serial length
+          if (!validateLength($model, 25) || !validateLength($serial, 25)) {
+            $msg .= "File " . htmlspecialchars($filename[$i]) . " has model or serial number too long<br>";
+            unlink($targetpath); // Clean up
+            continue;
+          }
 
           // Bind the statement and execute with error handling
           if (!$statement->bind_param("sssss", $datetime, $model, $serial, $file_contents, $filename[$i])) {
@@ -208,6 +227,7 @@ if (isset($_REQUEST['file-upload'])) {
         }
       }
     }
+  }
   }
 }
 if ($count > 0) {
