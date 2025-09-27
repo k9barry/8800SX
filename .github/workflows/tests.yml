@@ -123,7 +123,15 @@ jobs:
       
     - name: Build and start services
       run: |
-        docker compose up -d --build --wait
+        # Temporarily expose database port for testing
+        export COMPOSE_OVERRIDE="
+        services:
+          db:
+            ports:
+              - \"3306:3306\"
+        "
+        echo "$COMPOSE_OVERRIDE" > docker-compose.test.yml
+        docker compose -f docker-compose.yml -f docker-compose.test.yml up -d --build --wait
         
     - name: Wait for services to be healthy
       run: |
@@ -135,6 +143,27 @@ jobs:
           done
         '
         
+    - name: Install MySQL client
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y mysql-client
+        
+    - name: Wait for database to be ready
+      run: |
+        echo "Waiting for database service to be ready on localhost:3306..."
+        for i in {1..30}; do
+          if mysqladmin ping -h127.0.0.1 -P3306 -uviavi -ptest_password_123 --silent >/dev/null 2>&1; then
+            echo "Database is ready after $i attempts"
+            break
+          fi
+          echo "Attempt $i/30: Database not ready, waiting 3 seconds..."
+          sleep 3
+          if [ $i -eq 30 ]; then
+            echo "Database failed to become ready after 30 attempts"
+            exit 1
+          fi
+        done
+        
     - name: Test web interface
       run: |
         curl -f http://localhost:8080 || exit 1
@@ -144,6 +173,26 @@ jobs:
       run: |
         docker compose exec -T db mysql -u viavi -ptest_password_123 viavi -e "SELECT 1;" || exit 1
         echo "Database is accessible"
+        
+    - name: Setup PHP for testing
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: mysqli, curl, mbstring, xml
+        tools: composer
+        
+    - name: Install dependencies for testing
+      run: composer install --prefer-dist --no-progress --no-suggest
+      
+    - name: Run PHPUnit tests with Docker environment
+      env:
+        DB_HOST: 127.0.0.1
+        DB_DATABASE: viavi
+        DB_USERNAME: viavi
+        DB_PASSWORD: test_password_123
+      run: |
+        # Run tests that need the full Docker environment with database access
+        vendor/bin/phpunit --testsuite=Integration
         
     - name: Test file upload endpoint
       run: |
@@ -166,7 +215,9 @@ jobs:
         
     - name: Cleanup
       if: always()
-      run: docker compose down -v
+      run: |
+        docker compose -f docker-compose.yml -f docker-compose.test.yml down -v
+        rm -f docker-compose.test.yml
 
   code-coverage:
     runs-on: ubuntu-latest
