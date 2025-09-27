@@ -299,6 +299,7 @@ function truncate($string, $length = 15) {
 // CSRF Protection Functions
 function generateCSRFToken() {
     if (session_status() === PHP_SESSION_NONE) {
+        // Only set cookie params if session not already started
         session_set_cookie_params([
             'lifetime' => 0,
             'path' => '/',
