@@ -371,7 +371,7 @@ function validateFileMimeType($temp_file, $allowed_types = ['text/plain']) {
 }
 
 // Simple rate limiting function
-function checkRateLimit($action = 'default', $max_attempts = 10, $time_window = 3600) {
+function checkRateLimit($action = 'default', $max_attempts = 4, $time_window = 60) {
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }
