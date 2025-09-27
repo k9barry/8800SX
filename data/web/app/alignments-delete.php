@@ -132,11 +132,11 @@ if(isset($_POST["id"]) && !empty($_POST["id"])){
                     <div class="page-header">
                         <h1><?php translate ('Delete Record') ?></h1>
                     </div>
-                    <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) . "?id=" . $_GET["id"]; ?>" method="post">
+                    <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) . "?id=" . htmlspecialchars($_GET["id"]); ?>" method="post">
                     <?php echo getCSRFHiddenInput(); ?>
                     <?php print_error_if_exists(@$error); ?>
                         <div class="alert alert-danger fade-in">
-                            <input type="hidden" name="id" value="<?php echo trim($_GET["id"]); ?>"/>
+                            <input type="hidden" name="id" value="<?php echo htmlspecialchars(trim($_GET["id"])); ?>"/>
                             <p><?php translate('delete_record_confirm') ?></p><br>
                             <p>
                                 <input type="submit" value="<?php translate('Yes') ?>" class="btn btn-danger">
@@ -146,8 +146,8 @@ if(isset($_POST["id"]) && !empty($_POST["id"])){
                     </form>
                     <hr>
                     <p>
-                        <a href="alignments-read.php?id=<?php echo $_GET["id"];?>" class="btn btn-info"><?php translate('View Record') ?></a>
-                        <a href="alignments-update.php?id=<?php echo $_GET["id"];?>" class="btn btn-warning"><?php translate('Update Record') ?></a>
+                        <a href="alignments-read.php?id=<?php echo htmlspecialchars($_GET["id"]);?>" class="btn btn-info"><?php translate('View Record') ?></a>
+                        <a href="alignments-update.php?id=<?php echo htmlspecialchars($_GET["id"]);?>" class="btn btn-warning"><?php translate('Update Record') ?></a>
                         <a href="javascript:history.back()" class="btn btn-primary"><?php translate('Back') ?></a>
                     </p>
                 </div>

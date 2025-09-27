@@ -54,7 +54,7 @@ jobs:
         
     - name: Upload coverage to Codecov
       if: matrix.php-version == '8.3'
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         file: tests/reports/coverage.xml
         flags: unittests
@@ -136,7 +136,7 @@ jobs:
     - name: Wait for services to be healthy
       run: |
         timeout 120 bash -c '
-          while ! docker compose ps --format json 2>/dev/null | jq -r ".[].Health // \"starting\"" | grep -q "healthy"; do
+          while ! docker compose ps | grep -q "healthy"; do
             echo "Waiting for services to be healthy..."
             docker compose ps
             sleep 10
