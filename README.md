@@ -1,8 +1,17 @@
 # 8800SX Viavi Service Monitor Database
 
 [![Docker Image CI](https://github.com/k9barry/8800SX/actions/workflows/docker-image.yml/badge.svg)](https://github.com/k9barry/8800SX/actions/workflows/docker-image.yml)
-[![Security](https://img.shields.io/badge/security-see%20SECURITY.md-blue)](SECURITY.md)
+[![Tests](https://github.com/k9barry/8800SX/actions/workflows/tests.yml/badge.svg)](https://github.com/k9barry/8800SX/actions/workflows/tests.yml)
+[![Code Quality](https://github.com/k9barry/8800SX/actions/workflows/code-quality.yml/badge.svg)](https://github.com/k9barry/8800SX/actions/workflows/code-quality.yml)
+[![codecov](https://codecov.io/gh/k9barry/8800SX/branch/main/graph/badge.svg)](https://codecov.io/gh/k9barry/8800SX)
 [![License](https://img.shields.io/github/license/k9barry/8800SX)](LICENSE)
+[![Security](https://img.shields.io/badge/security-see%20SECURITY.md-blue)](SECURITY.md)
+[![PHP Version](https://img.shields.io/badge/PHP-8.3-777BB4?logo=php&logoColor=white)](https://www.php.net/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.4-4479A1?logo=mysql&logoColor=white)](https://mysql.com/)
+[![GitHub Issues](https://img.shields.io/github/issues/k9barry/8800SX)](https://github.com/k9barry/8800SX/issues)
+[![GitHub Stars](https://img.shields.io/github/stars/k9barry/8800SX)](https://github.com/k9barry/8800SX/stargazers)
+[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](#🤝-contributing)
 
 A Docker-based web application for parsing and managing output files from Viavi 8800SX service monitors. This application stores alignment test results in a MySQL database with full file content preservation and provides a web interface for searching and viewing test data.
 
