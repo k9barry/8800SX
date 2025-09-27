@@ -7,21 +7,27 @@
  */
 include('connection.php');
 header("Content-type: text/plain");
-if ($_REQUEST['serial']) {
-  $serial = $_POST['serial'];
 
-  $query = "SELECT * FROM alignments WHERE serial LIKE '%$serial%'";
-  $result = mysqli_query($connection, $query);
+if (isset($_REQUEST['serial']) && !empty($_REQUEST['serial'])) {
+  $serial = trim($_POST['serial']);
+  
+  // Use prepared statement to prevent SQL injection
+  $query = "SELECT * FROM alignments WHERE serial LIKE ?";
+  $stmt = $connection->prepare($query);
+  $search_term = '%' . $serial . '%';
+  $stmt->bind_param("s", $search_term);
+  $stmt->execute();
+  $result = $stmt->get_result();
 
-  if ($row = mysqli_num_rows($result) > 0) {
-    while ($row = mysqli_fetch_assoc($result)) {
+  if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
       echo "*************************************************************************************************************************\r\n";
-      echo "Id: " . $row['id'] . "\r\n";
-      echo "Serial: " . $row['serial'] . "\r\n";
-      echo "Model: " . $row['model'] . "\r\n";
-      echo "Alignment Date " . $row['datetime'] . "\r\n";
+      echo "Id: " . htmlspecialchars($row['id']) . "\r\n";
+      echo "Serial: " . htmlspecialchars($row['serial']) . "\r\n";
+      echo "Model: " . htmlspecialchars($row['model']) . "\r\n";
+      echo "Alignment Date " . htmlspecialchars($row['datetime']) . "\r\n";
       echo "Results: " . "\r\n";
-      echo "" . $row["file"] . "\r\n";
+      echo htmlspecialchars($row["file"]) . "\r\n";
       echo "\r\n";
       echo "\r\n";
     }
@@ -31,6 +37,6 @@ if ($_REQUEST['serial']) {
     echo "No serial number found";
     echo "\r\n";
   }
-  mysqli_free_result($result);
-  mysqli_close($connection);
+  $stmt->close();
+  $connection->close();
 }
