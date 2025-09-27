@@ -56,8 +56,9 @@ class DatabaseTest extends TestCase
     
     public function testDatabaseConnection()
     {
-        $this->assertNotNull($this->connection);
-        $this->assertFalse($this->connection->connect_error);
+        $this->assertNotNull($this->connection, 'Database connection should not be null');
+        $this->assertTrue($this->connection instanceof \mysqli, 'Database connection should be a MySQLi instance');
+        $this->assertFalse($this->connection->connect_error, 'Database connection should not have a connect error');
     }
     
     public function testTableCreation()
