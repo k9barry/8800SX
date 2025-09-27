@@ -1,0 +1,18 @@
+parameters:
+    level: 5
+    paths:
+        - data/web
+    excludePaths:
+        - data/web/uploads
+        - data/web/bootstrap.min.css
+    ignoreErrors:
+        # Ignore translation function issues
+        - '#Function translate not found#'
+        # Ignore global variable issues for legacy code
+        - '#Variable \$link#'
+        - '#Variable \$connection#'
+    bootstrapFiles:
+        - tests/bootstrap.php
+    reportUnmatchedIgnoredErrors: false
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false

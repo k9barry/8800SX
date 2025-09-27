@@ -92,19 +92,21 @@
                     $where_columns = array_intersect_key($_GET, array_flip($columns));
                     $get_param = "";
                     $where_statement = " WHERE 1=1 ";
+                    $where_params = array();
+                    $param_types = "";
+                    
                     foreach ( $where_columns as $key => $val ) {
-                        $where_statement .= " AND `$key` = '" . mysqli_real_escape_string($link, $val) . "' ";
-                        $get_param .= "&$key=$val";
+                        $where_statement .= " AND `$key` = ? ";
+                        $where_params[] = $val;
+                        $param_types .= "s";
+                        $get_param .= "&$key=" . urlencode($val);
                     }
 
                     if (!empty($_GET['search'])) {
-                        $search = mysqli_real_escape_string($link, $_GET['search']);
-                        if (strpos('`alignments`.`id`, `alignments`.`datetime`, `alignments`.`model`, `alignments`.`serial`, `alignments`.`entered`, `alignments`.`filename`', ',')) {
-                            $where_statement .= " AND CONCAT_WS (`alignments`.`id`, `alignments`.`datetime`, `alignments`.`model`, `alignments`.`serial`, `alignments`.`entered`, `alignments`.`filename`) LIKE '%$search%'";
-                        } else {
-                            $where_statement .= " AND `alignments`.`id`, `alignments`.`datetime`, `alignments`.`model`, `alignments`.`serial`, `alignments`.`entered`, `alignments`.`filename` LIKE '%$search%'";
-                        }
-
+                        $search = trim($_GET['search']);
+                        $where_statement .= " AND CONCAT_WS ('', `alignments`.`id`, `alignments`.`datetime`, `alignments`.`model`, `alignments`.`serial`, `alignments`.`entered`, `alignments`.`filename`) LIKE ?";
+                        $where_params[] = '%' . $search . '%';
+                        $param_types .= "s";
                     } else {
                         $search = "";
                     }
@@ -112,20 +114,46 @@
                     $order_clause = !empty($order) ? "ORDER BY `$order` $sort" : '';
                     $group_clause = !empty($order) && $order == 'id' ? "GROUP BY `alignments`.`$order`" : '';
 
-                    // Prepare SQL queries
+                    // Prepare SQL queries with proper parameterization
                     $sql = "SELECT `alignments`.* 
                             FROM `alignments` 
                             $where_statement
                             $group_clause
                             $order_clause
-                            LIMIT $offset, $no_of_records_per_page;";
+                            LIMIT ?, ?";
                     $count_pages = "SELECT COUNT(*) AS count FROM `alignments` 
                             $where_statement";
 
-                    if($result = mysqli_query($link, $sql)){
+                    // Add LIMIT parameters
+                    $where_params[] = $offset;
+                    $where_params[] = $no_of_records_per_page;
+                    $param_types .= "ii";
+
+                    // Execute count query first
+                    if ($count_stmt = mysqli_prepare($link, $count_pages)) {
+                        if (!empty($where_params) && !empty($param_types)) {
+                            $count_params = array_slice($where_params, 0, -2); // Remove LIMIT params for count
+                            $count_param_types = substr($param_types, 0, -2); // Remove 'ii' for LIMIT
+                            if (!empty($count_params)) {
+                                mysqli_stmt_bind_param($count_stmt, $count_param_types, ...$count_params);
+                            }
+                        }
+                        mysqli_stmt_execute($count_stmt);
+                        $count_result = mysqli_stmt_get_result($count_stmt);
+                        $number_of_results = mysqli_fetch_assoc($count_result)['count'];
+                        $total_pages = ceil($number_of_results / $no_of_records_per_page);
+                        mysqli_stmt_close($count_stmt);
+                    }
+
+                    // Execute main query
+                    if($stmt = mysqli_prepare($link, $sql)){
+                        if (!empty($where_params) && !empty($param_types)) {
+                            mysqli_stmt_bind_param($stmt, $param_types, ...$where_params);
+                        }
+                        mysqli_stmt_execute($stmt);
+                        $result = mysqli_stmt_get_result($stmt);
+                        
                         if(mysqli_num_rows($result) > 0){
-                            $number_of_results = mysqli_fetch_assoc(mysqli_query($link, $count_pages))['count'];
-                            $total_pages = ceil($number_of_results / $no_of_records_per_page);
                             translate('total_results', true, $number_of_results, $pageno, $total_pages);
                             ?>
 
@@ -247,13 +275,14 @@
                                     </li>
                                 </ul>
 <?php
-                            // Free result set
+                            // Free result set and close statement
                             mysqli_free_result($result);
+                            mysqli_stmt_close($stmt);
                         } else{
                             echo "<p class='lead'><em>" . translate('No records were found.') . "</em></p>";
                         }
                     } else{
-                        echo "ERROR: Could not able to execute $sql. " . mysqli_error($link);
+                        echo "ERROR: Could not prepare statement. " . mysqli_error($link);
                     }
 
                     // Close connection
