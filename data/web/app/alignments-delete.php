@@ -12,7 +12,6 @@ if(isset($_POST["id"]) && !empty($_POST["id"])){
         exit();
     }
 
-
     // Find uploaded files references for deletion
     $fileColumns = [];
     if (isset($tables_and_columns_names['alignments']['columns'])) {
@@ -32,10 +31,9 @@ if(isset($_POST["id"]) && !empty($_POST["id"])){
                 header("location: error.php");
                 exit();
             }
-
-            $sql = "SELECT `" . $columnName . "`
-                    FROM `alignments`
-                    WHERE `id` = ?";
+            // Sanitize column name for SQL identifier
+            $safeColumnName = "`" . str_replace("`", "``", $columnName) . "`";
+            $sql = "SELECT $safeColumnName FROM `alignments` WHERE `id` = ?";
 
             if ($stmt = mysqli_prepare($link, $sql)) {
                 // Set parameters
@@ -76,8 +74,6 @@ if(isset($_POST["id"]) && !empty($_POST["id"])){
         }
     }
 
-
-
     // Prepare a delete statement
     $sql = "DELETE FROM `alignments` WHERE `id` = ?";
 
@@ -86,10 +82,10 @@ if(isset($_POST["id"]) && !empty($_POST["id"])){
         $param_id = trim($_POST["id"]);
 
         // Bind variables to the prepared statement as parameters
-		if (is_int($param_id)) $__vartype = "i";
-		elseif (is_string($param_id)) $__vartype = "s";
-		elseif (is_numeric($param_id)) $__vartype = "d";
-		else $__vartype = "b"; // blob
+	if (is_int($param_id)) $__vartype = "i";
+	elseif (is_string($param_id)) $__vartype = "s";
+	elseif (is_numeric($param_id)) $__vartype = "d";
+	else $__vartype = "b"; // blob
         mysqli_stmt_bind_param($stmt, $__vartype, $param_id);
 
         try {
