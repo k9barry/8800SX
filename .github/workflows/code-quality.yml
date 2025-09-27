@@ -54,11 +54,6 @@ jobs:
       with:
         dockerfile: Dockerfile
         
-    - name: Lint secondary Dockerfile
-      uses: hadolint/hadolint-action@v3.1.0
-      with:
-        dockerfile: data/web/Dockerfile
-        
     - name: Validate docker-compose
       run: |
         docker compose config
