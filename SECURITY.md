@@ -59,8 +59,9 @@ If you discover a security vulnerability in the 8800SX project, please report it
   - No direct database access from outside
   - Proper port exposure (only 8080 for web interface)
 - **Secret Management**: 
-  - Database passwords stored in Docker secrets
+  - Database passwords stored in Docker secrets (multi-container) or environment variables (unified container)
   - No hardcoded credentials in source code
+  - `.env` file in `.gitignore` to prevent accidental commits
 
 ### Database Security
 
@@ -73,7 +74,9 @@ If you discover a security vulnerability in the 8800SX project, please report it
 
 ### Deployment Security
 
-1. **Change Default Password**: Update `secrets/db_password.txt` with a strong password
+1. **Change Default Password**: 
+   - For multi-container setup: Update `secrets/db_password.txt` with a strong password
+   - For unified container: Copy `.env.example` to `.env` and set a secure `DB_PASSWORD`
 2. **Network Security**: Deploy behind a reverse proxy (nginx, Traefik, etc.)
 3. **HTTPS**: Enable SSL/TLS for production deployments
 4. **Firewall**: Restrict access to port 8080 to authorized networks only
