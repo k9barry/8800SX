@@ -20,7 +20,9 @@ RUN sed -i 's/upload_max_filesize = 2M/upload_max_filesize = 128M/g' /usr/local/
     && sed -i 's/post_max_size = 8M/post_max_size = 128M/g' /usr/local/etc/php/php.ini \
     && sed -i 's/;max_execution_time = 30/max_execution_time = 300/g' /usr/local/etc/php/php.ini \
     && sed -i 's/;max_input_time = 60/max_input_time = 300/g' /usr/local/etc/php/php.ini \
-    && sed -i 's/memory_limit = 128M/memory_limit = 256M/g' /usr/local/etc/php/php.ini
+    && sed -i 's/memory_limit = 128M/memory_limit = 256M/g' /usr/local/etc/php/php.ini \
+    && echo "mysqli.default_socket = /run/mysqld/mysqld.sock" >> /usr/local/etc/php/php.ini \
+    && echo "pdo_mysql.default_socket = /run/mysqld/mysqld.sock" >> /usr/local/etc/php/php.ini
 
 # Configure PHP-FPM to listen on localhost
 RUN sed -i 's/listen = 9000/listen = 127.0.0.1:9000/g' /usr/local/etc/php-fpm.d/www.conf \
@@ -91,10 +93,26 @@ set -e
 # Set database password from environment or use default
 DB_PASSWORD="${DB_PASSWORD:-ChangeMe}"
 
+# Ensure MySQL log directory and file exist with proper permissions
+mkdir -p /var/log/mysql
+touch /var/log/mysql/error.log
+chown -R mysql:mysql /var/log/mysql
+chmod 755 /var/log/mysql
+chmod 644 /var/log/mysql/error.log
+
+# Ensure MySQL socket directory has proper permissions
+chown -R mysql:mysql /run/mysqld
+chmod 755 /run/mysqld
+
 # Initialize MySQL if not already initialized
 if [ ! -d "/var/lib/mysql/mysql" ]; then
     echo "Initializing MySQL database..."
     mariadb-install-db --user=mysql --datadir=/var/lib/mysql > /dev/null
+fi
+
+# Check if viavi database exists, if not create it
+if [ ! -d "/var/lib/mysql/viavi" ]; then
+    echo "Setting up viavi database..."
     
     # Start MySQL temporarily to create database and user
     /usr/sbin/mariadbd --user=mysql --datadir=/var/lib/mysql --skip-networking &
@@ -103,7 +121,7 @@ if [ ! -d "/var/lib/mysql/mysql" ]; then
     # Wait for MySQL to be ready
     echo "Waiting for MySQL to start..."
     for i in {30..0}; do
-        if mysqladmin ping -h localhost --silent; then
+        if mysqladmin ping -h localhost --silent 2>/dev/null; then
             break
         fi
         echo "MySQL is unavailable - sleeping"
@@ -132,6 +150,7 @@ EOSQL
     fi
     
     # Stop temporary MySQL
+    echo "Stopping temporary MySQL..."
     kill $MYSQL_PID
     wait $MYSQL_PID
     echo "MySQL initialization complete"
@@ -150,8 +169,9 @@ EOF
 
 RUN chmod +x /entrypoint.sh
 
-# Update config.php to use localhost for database
-RUN sed -i "s/\$db_server.*=.*'db';/\$db_server = 'localhost';/g" /var/www/html/app/config.php
+# Update both config.php and connection.php to use localhost for database
+RUN sed -i "s/\$db_server.*=.*'db';/\$db_server = 'localhost';/g" /var/www/html/app/config.php \
+    && sed -i 's/\$host = "db";/\$host = "localhost";/g' /var/www/html/connection.php
 
 # Expose HTTP port
 EXPOSE 80
