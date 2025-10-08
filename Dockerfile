@@ -44,11 +44,7 @@ COPY data/web /var/www/html/
 COPY data/init-db.sql /docker-entrypoint-initdb.d/init-db.sql
 
 # Copy Nginx configuration (updated for localhost)
-COPY data/web/config/nginx.conf /etc/nginx/http.d/default.conf
-
-# Update Nginx config to use localhost instead of php-fpm service name
-RUN sed -i 's/fastcgi_pass php-fpm:9000;/fastcgi_pass 127.0.0.1:9000;/g' /etc/nginx/sites-available/default \
-    && sed -i 's/fastcgi_pass php-fpm:9000;/fastcgi_pass 127.0.0.1:9000;/g' /etc/nginx/conf.d/default.conf 2>/dev/null || true
+COPY data/web/config/nginx.conf /etc/nginx/sites-available/default
 
 # Create supervisord configuration
 RUN mkdir -p /etc/supervisor/conf.d
