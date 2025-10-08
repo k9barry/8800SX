@@ -9,11 +9,12 @@ echo "============================================"
 echo ""
 
 # Configuration
-IMAGE_NAME="viavi:test"
+IMAGE_NAME="${1:-viavi:test}"  # Accept image name as first argument, default to viavi:test
 CONTAINER_NAME="viavi-test-$$"
 DB_PASSWORD="test_password_123"
 TEST_PORT="8081"
 CLEANUP_ON_SUCCESS=true
+SKIP_BUILD="${2:-false}"  # Accept skip build flag as second argument
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -32,14 +33,24 @@ cleanup() {
 # Set trap to cleanup on exit
 trap cleanup EXIT
 
-# Build the image
-echo "Step 1: Building Docker image..."
-if docker build -f Dockerfile -t $IMAGE_NAME . > /tmp/build.log 2>&1; then
-    echo -e "${GREEN}✓${NC} Image built successfully"
+# Build the image (skip if image already exists and SKIP_BUILD is true)
+if [ "$SKIP_BUILD" = "true" ]; then
+    echo "Step 1: Using pre-built image: $IMAGE_NAME"
+    # Verify the image exists
+    if ! docker image inspect $IMAGE_NAME > /dev/null 2>&1; then
+        echo -e "${RED}✗${NC} Image $IMAGE_NAME does not exist!"
+        exit 1
+    fi
+    echo -e "${GREEN}✓${NC} Pre-built image found"
 else
-    echo -e "${RED}✗${NC} Build failed! Check /tmp/build.log"
-    tail -50 /tmp/build.log
-    exit 1
+    echo "Step 1: Building Docker image..."
+    if docker build -f Dockerfile -t $IMAGE_NAME . > /tmp/build.log 2>&1; then
+        echo -e "${GREEN}✓${NC} Image built successfully"
+    else
+        echo -e "${RED}✗${NC} Build failed! Check /tmp/build.log"
+        tail -50 /tmp/build.log
+        exit 1
+    fi
 fi
 echo ""
 
