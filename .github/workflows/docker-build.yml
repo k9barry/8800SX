@@ -35,12 +35,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
       
-      - name: Test image components
-        run: |
-          echo "Testing image components..."
-          docker run --rm test-viavi:latest /bin/sh -c "which nginx && which php && which mysqld"
-          echo "All required components are present"
-      
       - name: Run test script
         run: |
           chmod +x ./test.sh

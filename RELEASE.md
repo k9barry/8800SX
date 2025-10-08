@@ -89,12 +89,15 @@ See [README.md](README.md) for complete documentation.
 
 ## Verification
 
-After release, verify the images are available:
+After release, verify the images are available and working:
 
 ```bash
+# Pull the images
 docker pull ghcr.io/k9barry/8800sx:3.0.0
 docker pull ghcr.io/k9barry/8800sx:latest
-docker run --rm ghcr.io/k9barry/8800sx:3.0.0 /bin/sh -c "which nginx && which php && which mysqld"
+
+# Run a quick test with the test script
+./test.sh ghcr.io/k9barry/8800sx:3.0.0 true
 ```
 
-All commands should succeed.
+The test script will verify all components and services are functioning correctly.

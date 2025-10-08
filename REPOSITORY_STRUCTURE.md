@@ -99,7 +99,6 @@ Persistent data is stored in volumes:
 
 1. **Test Job** (runs on all pushes and PRs):
    - Build Docker image
-   - Test image components
    - Run automated test suite
 
 2. **Build-and-Push Job** (runs on push to main and tags):
