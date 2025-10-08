@@ -32,7 +32,12 @@ $database = "viavi";
 try {
     $connection = new mysqli($host, $username, $password, $database);
 } catch (mysqli_sql_exception $e) {
-    error_log("Database connection failed: " . $e->getMessage());
+    $error_msg = $e->getMessage();
+    error_log("Database connection failed: " . $error_msg);
+    // Provide more helpful error message for common socket issues
+    if (strpos($error_msg, 'No such file or directory') !== false) {
+        die("Database connection failed: The database is still starting up. Please wait a moment and refresh the page.");
+    }
     die("Database connection failed. Please try again later.");
 }
 

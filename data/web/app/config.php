@@ -48,9 +48,17 @@ $domain                 = $protocol . '://' . $_SERVER['HTTP_HOST']; // Replace 
 try {
     $link = mysqli_connect($db_server, $db_user, $db_password, $db_name);
 } catch (mysqli_sql_exception $e) {
-    die("Database connection failed: " . htmlspecialchars($e->getMessage()));
+    $error_msg = $e->getMessage();
+    // Provide more helpful error message for common socket issues
+    if (strpos($error_msg, 'No such file or directory') !== false) {
+        error_log("Database connection failed: MySQL socket not available. The database may still be initializing.");
+        die("Database connection failed: The database is still starting up. Please wait a moment and refresh the page.");
+    }
+    error_log("Database connection failed: " . $error_msg);
+    die("Database connection failed: " . htmlspecialchars($error_msg));
 }
 if (!$link) {
+    error_log("Database connection failed: " . mysqli_connect_error());
     die("Database connection failed: " . htmlspecialchars(mysqli_connect_error()));
 }
 
