@@ -183,6 +183,13 @@ docker build -f Dockerfile.unified -t viavi:latest .
 
 ### Method 3: Docker Compose with Traefik
 
+**Setup:**
+```bash
+cp .env.example .env
+nano .env  # Set your DB_PASSWORD
+```
+
+**docker-compose.yml:**
 ```yaml
 version: "3.8"
 services:
@@ -220,6 +227,7 @@ networks:
 |------|---------|------|
 | `Dockerfile.unified` | Multi-service container definition | 5.3KB |
 | `docker-compose.traefik.yml` | Traefik deployment example | 2.2KB |
+| `.env.example` | Environment variables template | 0.3KB |
 | `UNIFIED_DEPLOYMENT.md` | Complete deployment guide | 10.4KB |
 | `QUICKSTART_UNIFIED.md` | Quick reference | 6.0KB |
 | `build-unified.sh` | Build automation script | 4.2KB |
@@ -232,6 +240,8 @@ networks:
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
 | `DB_PASSWORD` | MySQL database password | `ChangeMe` | Yes (production) |
+
+**Setup**: Copy `.env.example` to `.env` and set your secure password.
 
 ## Volumes
 

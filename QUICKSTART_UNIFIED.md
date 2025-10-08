@@ -49,6 +49,22 @@ docker-compose up -d
 
 ### Option 3: Docker Compose with Traefik
 
+**Setup:**
+```bash
+# Copy example files
+cp docker-compose.traefik.yml docker-compose.yml
+cp .env.example .env
+
+# Edit .env and set your DB_PASSWORD
+nano .env
+
+# Create Traefik network if not exists
+docker network create traefik
+
+# Deploy
+docker-compose up -d
+```
+
 See `docker-compose.traefik.yml` for full Traefik integration example.
 
 Quick version:

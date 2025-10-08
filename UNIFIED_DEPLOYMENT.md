@@ -73,12 +73,20 @@ Once the container is running, access the application at:
    cp docker-compose.traefik.yml docker-compose.yml
    ```
 
-2. **Edit the configuration:**
-   - Update the `Host` rule to match your domain: `Host(\`viavi.example.com\`)`
-   - Set your database password in `.env` file or environment variable
+2. **Set up environment variables:**
+   ```bash
+   # Copy the .env example file
+   cp .env.example .env
+   
+   # Edit .env and set a secure DB_PASSWORD
+   nano .env
+   ```
+
+3. **Edit the configuration:**
+   - Update the `Host` rule in `docker-compose.yml` to match your domain: `Host(\`viavi.example.com\`)`
    - Configure TLS certificate resolver if using Let's Encrypt
 
-3. **Start the service:**
+4. **Start the service:**
    ```bash
    docker-compose up -d
    ```
