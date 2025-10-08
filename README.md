@@ -74,7 +74,11 @@ docker run -d \
   ghcr.io/k9barry/8800sx:unified
 
 # Or use Docker Compose with Traefik
-# See docker-compose.traefik.yml for Traefik integration
+# Copy example files and configure
+cp docker-compose.traefik.yml docker-compose.yml
+cp .env.example .env
+nano .env  # Set DB_PASSWORD
+docker-compose up -d
 ```
 
 📖 **For detailed unified deployment instructions**, including Traefik setup, see [UNIFIED_DEPLOYMENT.md](UNIFIED_DEPLOYMENT.md)
