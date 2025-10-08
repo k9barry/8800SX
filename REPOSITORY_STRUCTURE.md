@@ -1,6 +1,10 @@
 # Repository Structure - v3.0.0
 
-This document describes the simplified repository structure for v3.0.0.
+This document describes the multi-container repository structure for v3.0.0.
+
+## Overview
+
+Version 3.0.0 features a multi-container Docker Compose architecture with separate services for the web application and database, along with Traefik integration for production deployments.
 
 ## Directory Tree
 
@@ -8,7 +12,8 @@ This document describes the simplified repository structure for v3.0.0.
 8800SX/
 ├── .github/
 │   └── workflows/
-│       └── docker-build.yml          # CI/CD workflow for Docker builds
+│       ├── docker-build.yml          # CI/CD workflow for Docker builds
+│       └── version-bump.yml          # Version management workflow
 ├── data/
 │   ├── web/                          # PHP application files
 │   │   ├── app/                      # Main application code
@@ -21,11 +26,12 @@ This document describes the simplified repository structure for v3.0.0.
 ├── .gitignore                        # Git ignore patterns
 ├── build.sh                          # Build script for local development
 ├── CHANGELOG.md                      # Version history and changes
-├── docker-compose.yml                # Traefik deployment example
-├── Dockerfile                        # Unified container definition
+├── docker-compose.yml                # Multi-container deployment with Traefik
+├── Dockerfile                        # Web service (Nginx + PHP-FPM)
+├── Dockerfile.unified                # Unified container (backward compatibility)
 ├── LICENSE                           # MIT License
 ├── README.md                         # Main documentation
-├── RELEASE.md                        # Release creation guide
+├── REPOSITORY_STRUCTURE.md           # This file
 ├── SECURITY.md                       # Security policy
 └── test.sh                           # Automated test script
 ```
@@ -36,8 +42,9 @@ This document describes the simplified repository structure for v3.0.0.
 
 | File | Purpose |
 |------|---------|
-| `Dockerfile` | Single unified container with Nginx, PHP-FPM, and MariaDB |
-| `docker-compose.yml` | Example Traefik deployment configuration |
+| `Dockerfile` | Multi-container web service with Nginx and PHP-FPM |
+| `Dockerfile.unified` | Unified container with Nginx, PHP-FPM, and MariaDB (backward compatibility) |
+| `docker-compose.yml` | Multi-container deployment with Traefik integration |
 | `.env.example` | Environment variables template (copy to `.env`) |
 | `.dockerignore` | Optimizes Docker build by excluding unnecessary files |
 
@@ -60,7 +67,7 @@ This document describes the simplified repository structure for v3.0.0.
 |------|---------|
 | `README.md` | Main project documentation and quick start |
 | `CHANGELOG.md` | Version history and migration guides |
-| `RELEASE.md` | Guide for creating releases |
+| `REPOSITORY_STRUCTURE.md` | Repository organization (this file) |
 | `SECURITY.md` | Security policy and reporting |
 | `LICENSE` | MIT License |
 
@@ -80,16 +87,33 @@ This document describes the simplified repository structure for v3.0.0.
 Configuration is done via `.env` file:
 
 ```env
+DB_ROOT_PASSWORD=RootChangeMe
+DB_NAME=viavi
+DB_USER=viavi
 DB_PASSWORD=your_secure_password
 ```
+
+### Docker Services
+
+The multi-container setup includes:
+
+- **viavi-web**: Nginx + PHP-FPM web application
+- **viavi-db**: MariaDB database server
+- **viavi**: Unified container (optional, profile-based)
 
 ### Docker Volumes
 
 Persistent data is stored in volumes:
 
-- `viavi_data` - MySQL database files
-- `viavi_uploads` - Uploaded test files
-- `viavi_logs` - MySQL logs (optional)
+- `viavi_data` - MySQL database files (viavi-db)
+- `viavi_uploads` - Uploaded test files (viavi-web)
+- `viavi_unified_data` - MySQL database files (unified container)
+- `viavi_unified_uploads` - Uploaded test files (unified container)
+
+### Docker Networks
+
+- `viavi-internal` - Internal communication between services
+- `traefik` - External Traefik reverse proxy network
 
 ## Workflows
 
@@ -114,31 +138,35 @@ Tags follow semantic versioning starting from v3.0.0:
 - `main` branch → `ghcr.io/k9barry/8800sx:main`
 - Commit SHA → `ghcr.io/k9barry/8800sx:<sha>`
 
-## Changes from v2.x
+## Architecture Changes in v3.0.0
 
-### Removed
+### Multi-Container Setup
 
-- Multi-container Docker setup
-- `secrets/` directory
-- PHPUnit test infrastructure
-- Old documentation (6 files)
-- Old workflows (3 files)
-- Composer dependencies
+Version 3.0.0 introduces a multi-container architecture:
 
-### Simplified
+- **Separate database service**: MariaDB runs in its own container (`viavi-db`)
+- **Web service**: Nginx + PHP-FPM in a dedicated container (`viavi-web`)
+- **Traefik integration**: Built-in labels for reverse proxy and SSL
+- **Internal networking**: Services communicate via Docker network
 
-- Single Dockerfile (was `Dockerfile.unified`)
-- Single workflow (was 4 workflows)
-- Configuration via `.env` (was secrets files)
-- Documentation (was 10+ files, now 5 files)
+### Backward Compatibility
 
-### Added
+The unified container remains available:
 
-- CHANGELOG.md
-- RELEASE.md
-- Enhanced README.md
+- Use Docker profile: `docker compose --profile unified up -d`
+- Or use standalone: `docker run ghcr.io/k9barry/8800sx:latest`
+- Preserved in `Dockerfile.unified`
+
+### New Features
+
+- Environment variable-based database configuration
+- Health checks for all services
+- Traefik labels for automatic HTTPS
+- Separate volumes for each deployment type
 
 ## Getting Started
+
+### Multi-Container Deployment
 
 1. **Clone repository**:
    ```bash
