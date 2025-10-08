@@ -34,7 +34,7 @@ trap cleanup EXIT
 
 # Build the image
 echo "Step 1: Building Docker image..."
-if docker build -f Dockerfile.unified -t $IMAGE_NAME . > /tmp/build.log 2>&1; then
+if docker build -f Dockerfile -t $IMAGE_NAME . > /tmp/build.log 2>&1; then
     echo -e "${GREEN}✓${NC} Image built successfully"
 else
     echo -e "${RED}✗${NC} Build failed! Check /tmp/build.log"

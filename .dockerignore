@@ -5,18 +5,12 @@
 
 # Documentation
 *.md
-!UNIFIED_DEPLOYMENT.md
 LICENSE
 SECURITY.md
-RELEASE_*.md
 
 # Development files
 .editorconfig
-phpstan.neon
-phpunit.xml
-composer.json
-composer.lock
-tests
+.env.example
 
 # Build artifacts
 *.log
@@ -31,19 +25,11 @@ Thumbs.db
 *~
 
 # Scripts not needed in container
-build-unified.sh
-create_release*.sh
+build.sh
+test.sh
 
 # Docker files
 docker-compose*.yml
-Dockerfile
-!Dockerfile.unified
-
-# CI/CD (not needed in container)
-.github/workflows
-
-# Secrets (handled via environment variables)
-secrets/*.txt
 
 # Test files
 test_*.txt

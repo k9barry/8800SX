@@ -68,7 +68,7 @@ echo "Step 1: Building Docker image..."
 echo "Image: ${IMAGE_NAME}:${IMAGE_TAG}"
 echo ""
 
-if docker build ${NO_CACHE} -f Dockerfile.unified -t ${IMAGE_NAME}:${IMAGE_TAG} .; then
+if docker build ${NO_CACHE} -f Dockerfile -t ${IMAGE_NAME}:${IMAGE_TAG} .; then
     echo ""
     echo "✅ Image built successfully!"
 else
