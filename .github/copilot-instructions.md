@@ -2,30 +2,37 @@
 
 ## Project Overview
 
-The 8800SX project is a Docker Compose application that processes output files from Viavi 8800SX service monitors and parses the information into a MySQL database. The application provides a web interface for uploading files, searching records, and viewing alignment data.
+The 8800SX project is a multi-container Docker Compose application that processes output files from Viavi 8800SX service monitors and parses the information into a MySQL database. The application provides a web interface for uploading files, searching records, and viewing alignment data.
 
 ## Tech Stack
 
 - **Backend**: PHP 8.3 with PHP-FPM
-- **Database**: MySQL 8.4.2
+- **Database**: MariaDB 10.11
 - **Web Server**: Nginx
 - **Frontend**: Bootstrap 4.5.0, jQuery 3.5.1
-- **Infrastructure**: Docker Compose
+- **Infrastructure**: Docker Compose with three services
+- **Reverse Proxy**: Traefik (optional, for production)
 - **File Processing**: Custom PHP scripts for parsing Viavi service monitor files
 
 ## Architecture
 
+### Multi-Container Setup (v3.0.0)
+
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│     Nginx       │───▶│    PHP-FPM      │───▶│     MySQL       │
-│   (Port 8080)   │    │   (PHP 8.3)     │    │   (Database)    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-        │                       │                       │
-        ▼                       ▼                       ▼
-  Static Files           PHP Application         Viavi Data
-  Bootstrap CSS          Upload/Parse            Alignments
-  jQuery/JS              Search Interface        BLOB Storage
+┌─────────────────┐     ┌─────────────────┐
+│   viavi-web     │────▶│   viavi-db      │
+│ (Nginx + PHP)   │     │   (MariaDB)     │
+└─────────────────┘     └─────────────────┘
+        │
+        ▼
+    Traefik
+  (viavi.example.com)
 ```
+
+**Services:**
+- `viavi-web`: Nginx web server and PHP-FPM application
+- `viavi-db`: MariaDB database server
+- `viavi`: Unified container (backward compatibility, optional)
 
 ## Key Components
 
@@ -42,9 +49,10 @@ The 8800SX project is a Docker Compose application that processes output files f
 - `data/web/app/locales/` - Internationalization (English, Russian, Indonesian)
 
 ### Configuration
-- `docker-compose.yml` - Service orchestration
-- `Dockerfile` - PHP-FPM container configuration
-- `secrets/db_password.txt` - Database password (not in repository)
+- `docker-compose.yml` - Multi-container orchestration with Traefik integration
+- `Dockerfile` - Web service container (Nginx + PHP-FPM)
+- `Dockerfile.unified` - Unified container (backward compatibility)
+- `.env` - Environment variables (DB_PASSWORD, DB_HOST, etc.)
 
 ## Development Guidelines
 
@@ -61,10 +69,11 @@ The 8800SX project is a Docker Compose application that processes output files f
 - Docker configuration at repository root
 
 ### Security Considerations
-- Database passwords are managed via Docker secrets
+- Database passwords are managed via environment variables in `.env` file
 - File uploads are restricted by extension (see `config.php` `$upload_disallowed_exts`)
 - Input sanitization using `htmlspecialchars()` and `mysqli_real_escape_string()`
 - File upload size limited to 128MB (configurable in Dockerfile)
+- Traefik handles SSL/TLS certificates automatically with Let's Encrypt
 
 ### Database Schema
 - Primary table: `alignments` with columns for datetime, model, serial, etc.
@@ -73,9 +82,10 @@ The 8800SX project is a Docker Compose application that processes output files f
 
 ### Environment Setup
 1. Clone repository
-2. Create `secrets/db_password.txt` with database password
-3. Run `docker compose up -d`
-4. Access application at `http://localhost:8080`
+2. Copy `.env.example` to `.env` and configure database credentials
+3. Create Traefik network: `docker network create traefik` (if using Traefik)
+4. Run `docker compose up -d`
+5. Access application via Traefik at configured hostname (e.g., `viavi.example.com`)
 
 ## Common Tasks
 
@@ -103,12 +113,13 @@ The 8800SX project is a Docker Compose application that processes output files f
 
 ## Testing
 
-The project currently uses manual testing:
-1. Build Docker containers: `docker build . --file Dockerfile --tag test-image`
+The project uses Docker integration testing:
+1. Build Docker containers: `docker compose build`
 2. Run Docker Compose: `docker compose up -d`
-3. Test file upload functionality at `http://localhost:8080`
-4. Verify database operations through phpMyAdmin interface
+3. Test file upload functionality via Traefik hostname or directly at container
+4. Verify database operations: `docker compose exec viavi-db mysql -u viavi -p`
 5. Test search and CRUD operations
+6. Run automated tests: `./test.sh`
 
 ## Deployment
 

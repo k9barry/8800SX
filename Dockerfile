@@ -1,11 +1,10 @@
-# Unified Docker image combining Nginx, PHP-FPM, and MySQL
-# Service name: viavi
+# Multi-container Docker image for Nginx + PHP-FPM
+# Service name: viavi-web
 FROM php:8.3-fpm
 
-# Install system dependencies and MySQL
+# Install system dependencies (without MariaDB)
 RUN apt-get update && apt-get install -y \
     nginx \
-    mariadb-server \
     mariadb-client \
     supervisor \
     curl \
@@ -32,20 +31,13 @@ RUN sed -i 's/listen = 9000/listen = 127.0.0.1:9000/g' /usr/local/etc/php-fpm.d/
 RUN mkdir -p /var/www/html/uploads \
     && mkdir -p /run/nginx \
     && mkdir -p /var/log/supervisor \
-    && mkdir -p /var/lib/mysql \
-    && mkdir -p /run/mysqld \
-    && mkdir -p /var/log/mysql \
     && chown -R www-data:www-data /var/www/html \
-    && chown -R mysql:mysql /var/lib/mysql \
-    && chown -R mysql:mysql /run/mysqld \
-    && chown -R mysql:mysql /var/log/mysql \
     && chmod -R 755 /var/www/html
 
 # Copy application files
 COPY data/web /var/www/html/
-COPY data/init-db.sql /docker-entrypoint-initdb.d/init-db.sql
 
-# Copy Nginx configuration (updated for localhost)
+# Copy Nginx configuration
 COPY data/web/config/nginx.conf /etc/nginx/sites-available/default
 
 # Create supervisord configuration
@@ -57,15 +49,6 @@ user=root
 logfile=/var/log/supervisor/supervisord.log
 pidfile=/var/run/supervisord.pid
 
-[program:mariadb]
-command=/usr/sbin/mariadbd --user=mysql --datadir=/var/lib/mysql --log-error=/var/log/mysql/error.log
-stdout_logfile=/dev/stdout
-stdout_logfile_maxbytes=0
-stderr_logfile=/dev/stderr
-stderr_logfile_maxbytes=0
-autorestart=true
-priority=1
-
 [program:php-fpm]
 command=/usr/local/sbin/php-fpm -F
 stdout_logfile=/dev/stdout
@@ -73,7 +56,7 @@ stdout_logfile_maxbytes=0
 stderr_logfile=/dev/stderr
 stderr_logfile_maxbytes=0
 autorestart=true
-priority=2
+priority=1
 
 [program:nginx]
 command=/usr/sbin/nginx -g 'daemon off;'
@@ -82,7 +65,7 @@ stdout_logfile_maxbytes=0
 stderr_logfile=/dev/stderr
 stderr_logfile_maxbytes=0
 autorestart=true
-priority=3
+priority=2
 EOF
 
 # Create entrypoint script
@@ -90,88 +73,50 @@ COPY <<'EOF' /entrypoint.sh
 #!/bin/sh
 set -e
 
-# Set database password from environment or use default
+# Get database configuration from environment variables
+DB_HOST="${DB_HOST:-viavi-db}"
+DB_NAME="${DB_NAME:-viavi}"
+DB_USER="${DB_USER:-viavi}"
 DB_PASSWORD="${DB_PASSWORD:-ChangeMe}"
 
-# Ensure MySQL log directory and file exist with proper permissions
-mkdir -p /var/log/mysql
-touch /var/log/mysql/error.log
-chown -R mysql:mysql /var/log/mysql
-chmod 755 /var/log/mysql
-chmod 644 /var/log/mysql/error.log
+# Wait for database to be ready
+echo "Waiting for database to be ready..."
+for i in {60..0}; do
+    if mysql -h "${DB_HOST}" -u "${DB_USER}" -p"${DB_PASSWORD}" -e "SELECT 1" > /dev/null 2>&1; then
+        echo "Database is ready!"
+        break
+    fi
+    echo "Database is unavailable - sleeping"
+    sleep 1
+done
 
-# Ensure MySQL socket directory has proper permissions
-chown -R mysql:mysql /run/mysqld
-chmod 755 /run/mysqld
-
-# Initialize MySQL if not already initialized
-if [ ! -d "/var/lib/mysql/mysql" ]; then
-    echo "Initializing MySQL database..."
-    mariadb-install-db --user=mysql --datadir=/var/lib/mysql > /dev/null
+if [ "$i" = 0 ]; then
+    echo "Database failed to become ready"
+    exit 1
 fi
 
-# Check if viavi database exists, if not create it
-if [ ! -d "/var/lib/mysql/viavi" ]; then
-    echo "Setting up viavi database..."
-    
-    # Start MySQL temporarily to create database and user
-    /usr/sbin/mariadbd --user=mysql --datadir=/var/lib/mysql --skip-networking &
-    MYSQL_PID=$!
-    
-    # Wait for MySQL to be ready
-    echo "Waiting for MySQL to start..."
-    for i in {30..0}; do
-        if mysqladmin ping -h localhost --silent 2>/dev/null; then
-            break
-        fi
-        echo "MySQL is unavailable - sleeping"
-        sleep 1
-    done
-    
-    if [ "$i" = 0 ]; then
-        echo "MySQL failed to start"
-        exit 1
-    fi
-    
-    echo "MySQL started successfully"
-    
-    # Create database and user
-    mysql -u root <<-EOSQL
-        CREATE DATABASE IF NOT EXISTS viavi;
-        CREATE USER IF NOT EXISTS 'viavi'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
-        GRANT ALL PRIVILEGES ON viavi.* TO 'viavi'@'localhost';
-        FLUSH PRIVILEGES;
-EOSQL
-    
-    # Import initial database schema
-    if [ -f "/docker-entrypoint-initdb.d/init-db.sql" ]; then
-        echo "Importing database schema..."
-        mysql -u viavi -p"${DB_PASSWORD}" viavi < /docker-entrypoint-initdb.d/init-db.sql
-    fi
-    
-    # Stop temporary MySQL
-    echo "Stopping temporary MySQL..."
-    kill $MYSQL_PID
-    wait $MYSQL_PID
-    echo "MySQL initialization complete"
-fi
-
-# Create password file for PHP application
+# Create password file for PHP application (backward compatibility)
 echo -n "${DB_PASSWORD}" > /tmp/db_password.txt
 chmod 644 /tmp/db_password.txt
 
-# Set environment variable for PHP to find password file
+# Set environment variables for PHP
+export DB_HOST="${DB_HOST}"
+export DB_NAME="${DB_NAME}"
+export DB_USER="${DB_USER}"
+export DB_PASSWORD="${DB_PASSWORD}"
 export DB_PASSWORD_FILE=/tmp/db_password.txt
 
-# Start supervisord to manage all services
+# Start supervisord to manage services
 exec /usr/bin/supervisord -c /etc/supervisord.conf
 EOF
 
 RUN chmod +x /entrypoint.sh
 
-# Update both config.php and connection.php to use localhost for database
-RUN sed -i "s/\$db_server.*=.*'db';/\$db_server = 'localhost';/g" /var/www/html/app/config.php \
-    && sed -i 's/\$host = "db";/\$host = "localhost";/g' /var/www/html/connection.php
+# Update both config.php and connection.php to use environment variable for database host
+RUN sed -i "s/\$db_server.*=.*'localhost';/\$db_server = getenv('DB_HOST') ?: 'viavi-db';/g" /var/www/html/app/config.php || true \
+    && sed -i "s/\$db_server.*=.*'db';/\$db_server = getenv('DB_HOST') ?: 'viavi-db';/g" /var/www/html/app/config.php || true \
+    && sed -i 's/\$host = "localhost";/\$host = getenv("DB_HOST") ?: "viavi-db";/g' /var/www/html/connection.php || true \
+    && sed -i 's/\$host = "db";/\$host = getenv("DB_HOST") ?: "viavi-db";/g' /var/www/html/connection.php || true
 
 # Expose HTTP port
 EXPOSE 80

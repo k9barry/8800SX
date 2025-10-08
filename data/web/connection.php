@@ -11,23 +11,27 @@
  * 
  */
 
-$host = "db";
-$username = "viavi";
+// Database configuration - support both environment variables and file-based config
+$host = getenv('DB_HOST') ?: 'viavi-db';
+$username = getenv('DB_USER') ?: 'viavi';
+$database = getenv('DB_NAME') ?: 'viavi';
 
-// Get database password from environment variable
-$db_password_file = getenv("DB_PASSWORD_FILE");
-if ($db_password_file === false) {
-    die("Error: DB_PASSWORD_FILE environment variable is not set.");
+// Get database password from environment variable or file
+$password = getenv('DB_PASSWORD');
+if ($password === false) {
+    // Fallback to file-based password for backward compatibility
+    $db_password_file = getenv("DB_PASSWORD_FILE");
+    if ($db_password_file === false) {
+        die("Error: Neither DB_PASSWORD nor DB_PASSWORD_FILE environment variable is set.");
+    }
+    if (!file_exists($db_password_file)) {
+        die("Error: Database password file not found at: " . htmlspecialchars($db_password_file));
+    }
+    $password = trim(file_get_contents($db_password_file));
+    if ($password === false || $password === '') {
+        die("Error: Failed to read database password from file.");
+    }
 }
-if (!file_exists($db_password_file)) {
-    die("Error: Database password file not found at: " . htmlspecialchars($db_password_file));
-}
-$password = trim(file_get_contents($db_password_file));
-if ($password === false || $password === '') {
-    die("Error: Failed to read database password from file.");
-}
-
-$database = "viavi";
 
 try {
     $connection = new mysqli($host, $username, $password, $database);

@@ -5,59 +5,75 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.0.0] - 2024-10-08
+## [3.0.0] - 2025-10-08
 
 ### Changed - BREAKING CHANGES
 
-- **Complete rewrite**: Project now uses only unified Docker container approach
-- **Simplified architecture**: Single Dockerfile instead of multi-container setup
-- **Configuration via .env**: All configuration through environment variables
-- **Removed multi-container setup**: Removed old `Dockerfile` for PHP-FPM only and multi-service `docker-compose.yml`
-- **Renamed files**: `Dockerfile.unified` → `Dockerfile`, `docker-compose.traefik.yml` → `docker-compose.yml`
-- **Unified workflow**: Single GitHub Actions workflow for build and semantic versioning
-- **Removed old workflows**: Eliminated separate workflows for tests, code quality, and legacy Docker builds
-- **Simplified scripts**: `build-unified.sh` → `build.sh`, `test-unified.sh` → `test.sh`
-
-### Removed
-
-- Multi-container Docker setup files (`docker-compose.yml` with separate services)
-- Old `Dockerfile` for PHP-FPM container
-- `secrets/` directory (replaced with environment variables)
-- PHPUnit test infrastructure (`tests/`, `phpunit.xml`, `phpstan.neon`)
-- Composer dependencies (`composer.json`, `composer.lock`)
-- Old documentation files:
-  - `PACKAGING_STEPS.md`
-  - `QUICKSTART_UNIFIED.md`
-  - `UNIFIED_DEPLOYMENT.md`
-  - `ARCHITECTURE_UNIFIED.md`
-  - `RELEASE_2.0.md`
-  - `RELEASE_NOTES_2.0.md`
-  - `create_release_2.0.sh`
-- GitHub Actions workflows:
-  - `docker-image.yml`
-  - `tests.yml`
-  - `code-quality.yml`
+- **Multi-container architecture**: Reverted to multi-container Docker Compose setup
+- **Three services**: Separated into `viavi-web` (Nginx + PHP-FPM), `viavi-db` (MariaDB), and `viavi` (unified, optional)
+- **Traefik integration**: Built-in Traefik labels on viavi-web service for host `viavi.example.com`
+- **Environment-based configuration**: Expanded `.env` file with `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_ROOT_PASSWORD`
+- **Database connection**: Updated PHP files to support environment variables (DB_HOST, DB_NAME, DB_USER, DB_PASSWORD)
+- **Backward compatibility**: Unified container available via Docker profile for migration
 
 ### Added
 
-- New simplified `README.md` focused on unified container deployment
-- `CHANGELOG.md` for tracking version history
-- Enhanced GitHub Actions workflow (`docker-build.yml`) with:
-  - Semantic versioning support
-  - Multi-platform builds (amd64, arm64)
-  - Automated testing
-  - Push to GitHub Container Registry
+- Separate Dockerfile for viavi-web service (Nginx + PHP-FPM without MariaDB)
+- Internal Docker network `viavi-internal` for service communication
+- Traefik external network support
+- Health checks for all services
+- Database initialization via docker-entrypoint-initdb.d
+- Dockerfile.unified for backward compatibility with unified container approach
+
+### Removed
+
+- None in this release; added multi-container support alongside existing unified container
 
 ### Migration Guide
 
-If upgrading from v2.x:
+#### From Unified Container (v2.x)
 
-1. Backup your data: `docker compose exec db mysqldump -u viavi -p viavi > backup.sql`
-2. Stop old containers: `docker compose down`
-3. Update to v3.0.0 image
-4. Use environment variables instead of secrets file
-5. Start new unified container with `DB_PASSWORD` environment variable
-6. Restore data if needed
+If migrating from unified container deployment:
+
+1. Backup your data:
+   ```bash
+   docker exec viavi mysqldump -u viavi -pChangeMe viavi > backup.sql
+   ```
+
+2. Stop old container:
+   ```bash
+   docker stop viavi
+   docker rm viavi
+   ```
+
+3. Update configuration:
+   ```bash
+   cp .env.example .env
+   # Edit .env and set DB_PASSWORD, DB_ROOT_PASSWORD, etc.
+   ```
+
+4. Create Traefik network (if using Traefik):
+   ```bash
+   docker network create traefik
+   ```
+
+5. Start multi-container setup:
+   ```bash
+   docker compose up -d
+   ```
+
+6. Restore data if needed:
+   ```bash
+   docker compose exec -i viavi-db mysql -u viavi -pChangeMe viavi < backup.sql
+   ```
+
+#### Using Unified Container (Backward Compatibility)
+
+To continue using the unified container:
+
+```bash
+docker compose --profile unified up -d
+```
 
 ## [2.0.0] - Previous Release
 
