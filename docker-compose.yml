@@ -1,5 +1,3 @@
-version: "3.8"
-
 # Docker Compose file for deploying viavi with Traefik
 # This assumes you have Traefik already running in your Docker environment
 #
