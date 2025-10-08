@@ -1,0 +1,50 @@
+# Git
+.git
+.gitignore
+.github
+
+# Documentation
+*.md
+!UNIFIED_DEPLOYMENT.md
+LICENSE
+SECURITY.md
+RELEASE_*.md
+
+# Development files
+.editorconfig
+phpstan.neon
+phpunit.xml
+composer.json
+composer.lock
+tests
+
+# Build artifacts
+*.log
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Scripts not needed in container
+build-unified.sh
+create_release*.sh
+
+# Docker files
+docker-compose*.yml
+Dockerfile
+!Dockerfile.unified
+
+# CI/CD (not needed in container)
+.github/workflows
+
+# Secrets (handled via environment variables)
+secrets/*.txt
+
+# Test files
+test_*.txt
+*.bak
