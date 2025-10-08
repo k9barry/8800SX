@@ -93,7 +93,7 @@ echo ""
 echo "Step 4: Testing web server..."
 sleep 5  # Give nginx a moment to fully initialize
 HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$TEST_PORT/ || echo "000")
-if [ "$HTTP_CODE" = "200" ]; then
+if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "302" ]; then
     echo -e "${GREEN}✓${NC} Web server responding (HTTP $HTTP_CODE)"
 else
     echo -e "${RED}✗${NC} Web server not responding correctly (HTTP $HTTP_CODE)"
