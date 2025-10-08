@@ -13,10 +13,33 @@
 
 $host = "db";
 $username = "viavi";
-$password = trim(file_get_contents(getenv("DB_PASSWORD_FILE")));
+
+// Get database password from environment variable
+$db_password_file = getenv("DB_PASSWORD_FILE");
+if ($db_password_file === false) {
+    die("Error: DB_PASSWORD_FILE environment variable is not set.");
+}
+if (!file_exists($db_password_file)) {
+    die("Error: Database password file not found at: " . htmlspecialchars($db_password_file));
+}
+$password = trim(file_get_contents($db_password_file));
+if ($password === false || $password === '') {
+    die("Error: Failed to read database password from file.");
+}
+
 $database = "viavi";
 
-$connection = new mysqli($host, $username, $password, $database);
+try {
+    $connection = new mysqli($host, $username, $password, $database);
+} catch (mysqli_sql_exception $e) {
+    $error_msg = $e->getMessage();
+    error_log("Database connection failed: " . $error_msg);
+    // Provide more helpful error message for common socket issues
+    if (strpos($error_msg, 'No such file or directory') !== false) {
+        die("Database connection failed: The database is still starting up. Please wait a moment and refresh the page.");
+    }
+    die("Database connection failed. Please try again later.");
+}
 
 if ($connection->connect_error) {
     error_log("Database connection failed: " . $connection->connect_error);
