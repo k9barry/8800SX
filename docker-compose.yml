@@ -1,5 +1,5 @@
-# Docker Compose file for deploying viavi with Traefik
-# This assumes you have Traefik already running in your Docker environment
+# Docker Compose file for 8800SX Viavi Service Monitor Database
+# Multi-container setup with three services
 #
 # SETUP INSTRUCTIONS:
 # 1. Copy .env.example to .env: cp .env.example .env
@@ -8,25 +8,49 @@
 # 4. Deploy: docker compose up -d
 
 services:
-  viavi:
-    image: ghcr.io/k9barry/8800sx:latest
-    # Or build locally:
-    # build:
-    #   context: .
-    #   dockerfile: Dockerfile
-    container_name: viavi
+  viavi-db:
+    image: mariadb:10.11
+    container_name: viavi-db
     restart: unless-stopped
     environment:
-      - DB_PASSWORD=${DB_PASSWORD:-ChangeMe}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-RootChangeMe}
+      MYSQL_DATABASE: ${DB_NAME:-viavi}
+      MYSQL_USER: ${DB_USER:-viavi}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-ChangeMe}
     volumes:
       # Persist database data
       - viavi_data:/var/lib/mysql
+      # Database initialization
+      - ./data/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    networks:
+      - viavi-internal
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  viavi-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: viavi-web
+    restart: unless-stopped
+    environment:
+      DB_HOST: viavi-db
+      DB_NAME: ${DB_NAME:-viavi}
+      DB_USER: ${DB_USER:-viavi}
+      DB_PASSWORD: ${DB_PASSWORD:-ChangeMe}
+    volumes:
       # Persist uploaded files
       - viavi_uploads:/var/www/html/uploads
-      # Optional: MySQL logs
-      - viavi_logs:/var/log/mysql
     networks:
+      - viavi-internal
       - traefik
+    depends_on:
+      viavi-db:
+        condition: service_healthy
     labels:
       # Enable Traefik for this container
       - "traefik.enable=true"
@@ -59,15 +83,41 @@ services:
       retries: 3
       start_period: 60s
 
+  viavi:
+    image: ghcr.io/k9barry/8800sx:latest
+    container_name: viavi
+    restart: unless-stopped
+    environment:
+      - DB_PASSWORD=${DB_PASSWORD:-ChangeMe}
+    volumes:
+      # Persist database data
+      - viavi_unified_data:/var/lib/mysql
+      # Persist uploaded files
+      - viavi_unified_uploads:/var/www/html/uploads
+    networks:
+      - viavi-internal
+    profiles:
+      - unified
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
 volumes:
   viavi_data:
     driver: local
   viavi_uploads:
     driver: local
-  viavi_logs:
+  viavi_unified_data:
+    driver: local
+  viavi_unified_uploads:
     driver: local
 
 networks:
+  viavi-internal:
+    driver: bridge
   traefik:
     external: true
     # Note: The traefik network should already exist in your environment
