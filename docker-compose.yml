@@ -12,6 +12,7 @@ services:
     image: mariadb:10.11
     container_name: viavi-db
     restart: unless-stopped
+    command: --skip-ssl
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-RootChangeMe}
       MYSQL_DATABASE: ${DB_NAME:-viavi}
