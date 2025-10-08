@@ -34,29 +34,52 @@ A Docker-based web application for parsing and managing output files from Viavi 
 
 ## 🛠️ Quick Start
 
-### 1. Clone Repository
+### Deployment Options
+
+Choose the deployment method that best fits your needs:
+
+#### Option 1: Multi-Container (Traditional)
+
+Best for: Development, testing, or when you need individual service management
+
 ```bash
+# Clone repository
 git clone https://github.com/k9barry/8800SX.git
 cd 8800SX
-```
 
-### 2. Configure Database Password
-**⚠️ Important**: Change the default database password for security
-```bash
-# Edit the password file (replace 'ChangeMe' with a strong password)
+# Configure database password
 nano secrets/db_password.txt
-```
 
-### 3. Start Services
-```bash
-# Start all services in detached mode
+# Start all services
 docker compose up -d
 
-# Check service status
-docker compose ps
+# Access at http://localhost:8080
 ```
 
-### 4. Access Application
+#### Option 2: Unified Single Container (Recommended for Traefik)
+
+Best for: Production deployments with Traefik, single-server setups, easier distribution
+
+```bash
+# Pull the unified image
+docker pull ghcr.io/k9barry/8800sx:unified
+
+# Run with Docker
+docker run -d \
+  --name viavi \
+  -p 8080:80 \
+  -e DB_PASSWORD=your_secure_password \
+  -v viavi_data:/var/lib/mysql \
+  -v viavi_uploads:/var/www/html/uploads \
+  ghcr.io/k9barry/8800sx:unified
+
+# Or use Docker Compose with Traefik
+# See docker-compose.traefik.yml for Traefik integration
+```
+
+📖 **For detailed unified deployment instructions**, including Traefik setup, see [UNIFIED_DEPLOYMENT.md](UNIFIED_DEPLOYMENT.md)
+
+### Access Application
 - **Web Interface**: http://localhost:8080
 - **phpMyAdmin**: Access via the "phpMyAdmin" button in the web interface
 
@@ -134,7 +157,9 @@ For detailed security information, see [SECURITY.md](SECURITY.md).
 
 ## 🐳 Docker Configuration
 
-### Services
+### Deployment Architectures
+
+#### Multi-Container Setup (docker-compose.yml)
 
 | Service | Image | Purpose | Ports |
 |---------|-------|---------|-------|
@@ -142,11 +167,27 @@ For detailed security information, see [SECURITY.md](SECURITY.md).
 | php-fpm | custom (PHP 8.3) | Application runtime | Internal |
 | db | mysql:8.4 | Database | Internal |
 
-### Volumes
-
+**Volumes:**
 - `db_data`: MySQL database files
 - `mysql_logs`: MySQL log files  
 - `./data/web/uploads`: Uploaded files (mounted as bind volume)
+
+#### Unified Container (Dockerfile.unified)
+
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| Web Server | Nginx | HTTP server on port 80 |
+| Application | PHP 8.3-FPM | Application runtime |
+| Database | MariaDB | MySQL-compatible database |
+| Process Manager | Supervisord | Manages all services |
+
+**Service Name:** `viavi`
+
+**Volumes:**
+- `/var/lib/mysql`: Database persistence
+- `/var/www/html/uploads`: Uploaded files
+
+**See:** [UNIFIED_DEPLOYMENT.md](UNIFIED_DEPLOYMENT.md) for complete unified deployment guide
 
 ### Health Checks
 
@@ -268,28 +309,49 @@ Access phpMyAdmin to monitor:
 
 **Security Checklist:**
 - [ ] Change default database password
-- [ ] Deploy behind HTTPS reverse proxy
+- [ ] Deploy behind HTTPS reverse proxy (Traefik recommended)
 - [ ] Configure firewall rules
 - [ ] Set up regular backups
 - [ ] Enable container logging
 - [ ] Monitor resource usage
 - [ ] Keep images updated
 
-**Recommended Production Setup:**
-```bash
-# Use production-ready reverse proxy
+### Traefik Integration (Recommended)
+
+For production deployments with Traefik, use the **unified container image**:
+
+```yaml
 version: "3.8"
 services:
-  traefik:
-    image: traefik:v2.9
-    # ... SSL/TLS configuration
-
-  8800sx:
-    # Your application
+  viavi:
+    image: ghcr.io/k9barry/8800sx:unified
+    container_name: viavi
+    restart: unless-stopped
+    environment:
+      - DB_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - viavi_data:/var/lib/mysql
+      - viavi_uploads:/var/www/html/uploads
+    networks:
+      - traefik
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.8800sx.tls=true"
+      - "traefik.http.routers.viavi.rule=Host(`viavi.yourdomain.com`)"
+      - "traefik.http.routers.viavi.entrypoints=websecure"
+      - "traefik.http.routers.viavi.tls=true"
+      - "traefik.http.routers.viavi.tls.certresolver=letsencrypt"
+      - "traefik.http.services.viavi.loadbalancer.server.port=80"
+
+volumes:
+  viavi_data:
+  viavi_uploads:
+
+networks:
+  traefik:
+    external: true
 ```
+
+📖 **Complete Traefik setup guide**: See [UNIFIED_DEPLOYMENT.md](UNIFIED_DEPLOYMENT.md)
 
 ## 🤝 Contributing
 
