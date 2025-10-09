@@ -132,9 +132,7 @@ Triggers when a PR is merged to main:
 
 Tags follow semantic versioning and are created automatically when PRs are merged:
 
-- `v3.0.1` → `ghcr.io/k9barry/8800sx:3.0.1`, `3.0`, `3`, `latest`
-- `main` branch → `ghcr.io/k9barry/8800sx:main`
-- Commit SHA → `ghcr.io/k9barry/8800sx:<sha>`
+- `v3.0.1` → `ghcr.io/k9barry/8800sx:3.0.1`, `latest`
 
 **Version Labels:**
 - Add `major` label to PR for breaking changes (e.g., 2.0.0 → 3.0.0)

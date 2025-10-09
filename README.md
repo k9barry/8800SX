@@ -177,7 +177,6 @@ When a PR is merged to main:
 
 - Latest release: \`ghcr.io/k9barry/8800sx:latest\`
 - Specific version: \`ghcr.io/k9barry/8800sx:3.0.0\`
-- Development: \`ghcr.io/k9barry/8800sx:main\`
 
 See [Releases](https://github.com/k9barry/8800SX/releases) for version history.
 
