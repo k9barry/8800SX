@@ -46,32 +46,9 @@ docker network create traefik
 docker compose up -d
 \`\`\`
 
-The viavi-web service will be available through Traefik at `viavi.example.com` (update host in docker-compose.yml).
-
-### Unified Container Deployment (Backward Compatibility)
-
-For a single unified container deployment:
-
-\`\`\`bash
-# Start unified container profile
-docker compose --profile unified up -d
-\`\`\`
-
-Or using Docker run:
-
-\`\`\`bash
-docker pull ghcr.io/k9barry/8800sx:latest
-
-docker run -d \
-  --name viavi \
-  -p 8080:80 \
-  -e DB_PASSWORD=your_secure_password \
-  -v viavi_data:/var/lib/mysql \
-  -v viavi_uploads:/var/www/html/uploads \
-  ghcr.io/k9barry/8800sx:latest
-\`\`\`
-
-Access at http://localhost:8080
+The viavi-web service will be available:
+- Through Traefik at `viavi.example.com` (update host in docker-compose.yml)
+- Directly at http://localhost:8080
 
 ## 📁 File Format Requirements
 
@@ -105,11 +82,6 @@ Example: \`TEST-123456-20231215-143022.txt\`
 **Services:**
 - `viavi-web`: Nginx web server and PHP-FPM application server
 - `viavi-db`: MariaDB database server
-- `viavi`: Unified container (backward compatibility, profile-based)
-
-### Unified Container (Backward Compatibility)
-
-The unified container uses **supervisord** to manage Nginx, PHP-FPM, and MariaDB in one container.
 
 ## 🔧 Configuration
 
@@ -129,8 +101,6 @@ The unified container uses **supervisord** to manage Nginx, PHP-FPM, and MariaDB
 |--------|---------|---------|
 | `viavi_data` | Database files (persistent) | viavi-db |
 | `viavi_uploads` | Uploaded test files (persistent) | viavi-web |
-| `viavi_unified_data` | Database files (unified) | viavi |
-| `viavi_unified_uploads` | Uploaded files (unified) | viavi |
 
 ### Networks
 
@@ -141,8 +111,6 @@ The unified container uses **supervisord** to manage Nginx, PHP-FPM, and MariaDB
 
 ## 🔨 Building Locally
 
-### Multi-Container Build
-
 \`\`\`bash
 # Clone repository
 git clone https://github.com/k9barry/8800SX.git
@@ -150,24 +118,6 @@ cd 8800SX
 
 # Build web service image
 docker compose build viavi-web
-
-# Or use build script
-./build.sh
-\`\`\`
-
-### Unified Container Build
-
-\`\`\`bash
-# Build unified image
-docker build -f Dockerfile.unified -t viavi:local .
-\`\`\`
-
-## 🧪 Testing
-
-Run the automated test suite:
-
-\`\`\`bash
-./test.sh
 \`\`\`
 
 ## 📊 Management
@@ -175,12 +125,9 @@ Run the automated test suite:
 ### View Logs
 
 \`\`\`bash
-# Multi-container logs
+# Service logs
 docker compose logs -f viavi-web
 docker compose logs -f viavi-db
-
-# Or for unified container
-docker logs -f viavi
 
 # Specific service logs (inside viavi-web container)
 docker exec viavi-web tail -f /var/log/nginx/access.log
@@ -189,7 +136,7 @@ docker exec viavi-web tail -f /var/log/nginx/access.log
 ### Database Access
 
 \`\`\`bash
-# Multi-container MySQL shell
+# MySQL shell
 docker exec -it viavi-db mysql -u viavi -p viavi
 
 # Database backup
@@ -197,22 +144,13 @@ docker compose exec viavi-db mysqldump -u viavi -p viavi > backup.sql
 
 # Database restore
 docker compose exec -i viavi-db mysql -u viavi -p viavi < backup.sql
-
-# Or for unified container
-docker exec -it viavi mysql -u viavi -p viavi
-docker exec viavi mysqldump -u viavi -p viavi > backup.sql
-docker exec -i viavi mysql -u viavi -p viavi < backup.sql
 \`\`\`
 
 ### Shell Access
 
 \`\`\`bash
-# Multi-container
 docker exec -it viavi-web /bin/bash
 docker exec -it viavi-db /bin/bash
-
-# Unified container
-docker exec -it viavi /bin/bash
 \`\`\`
 
 ## 🔒 Security
@@ -228,18 +166,18 @@ docker exec -it viavi /bin/bash
 This project uses semantic versioning (SemVer).
 
 - **v3.0.0**: Multi-container architecture with Traefik integration
-- Latest stable: \`ghcr.io/k9barry/8800sx:latest\` (unified container for backward compatibility)
-- Specific version: \`ghcr.io/k9barry/8800sx:3.0.0\`
+- Web service image: \`ghcr.io/k9barry/8800sx:main-web\`
+- Specific version: \`ghcr.io/k9barry/8800sx:3.0.0-web\`
 
 See [Releases](https://github.com/k9barry/8800SX/releases) for version history.
 
 ## 🔄 Upgrading
 
-### From v2.x (Multi-Container)
+### From Previous Versions
 
 1. **Backup your data:**
    \`\`\`bash
-   docker compose exec db mysqldump -u viavi -p viavi > backup.sql
+   docker compose exec viavi-db mysqldump -u viavi -p viavi > backup.sql
    \`\`\`
 
 2. **Stop old containers:**
@@ -247,20 +185,15 @@ See [Releases](https://github.com/k9barry/8800SX/releases) for version history.
    docker compose down
    \`\`\`
 
-3. **Start unified container:**
+3. **Pull latest changes and start:**
    \`\`\`bash
-   docker run -d \
-     --name viavi \
-     -p 8080:80 \
-     -e DB_PASSWORD=your_password \
-     -v viavi_data:/var/lib/mysql \
-     -v viavi_uploads:/var/www/html/uploads \
-     ghcr.io/k9barry/8800sx:latest
+   git pull
+   docker compose up -d
    \`\`\`
 
 4. **Restore data if needed:**
    \`\`\`bash
-   docker exec -i viavi mysql -u viavi -pyour_password viavi < backup.sql
+   docker compose exec -i viavi-db mysql -u viavi -p viavi < backup.sql
    \`\`\`
 
 ## 🤝 Contributing
