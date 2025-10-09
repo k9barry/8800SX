@@ -29,6 +29,20 @@ jobs:
         run: |
           cp .env.example .env
       
+      - name: Patch docker-compose.yml for CI
+        run: |
+          # Check if traefik network is set as external (ignore commented lines)
+          if grep -E "^\s*external:\s*true" docker-compose.yml > /dev/null; then
+            echo "Found external traefik network, patching for CI..."
+            # Create backup
+            cp docker-compose.yml docker-compose.yml.ci-backup
+            # Remove external: true from traefik network to let Docker manage it
+            sed -i '/traefik:/,/external: true/{ /external: true/d; }' docker-compose.yml
+            echo "Patched docker-compose.yml to use Docker-managed traefik network"
+          else
+            echo "No external traefik network found, proceeding without patch"
+          fi
+      
       - name: Build viavi-web service
         run: |
           docker compose build viavi-web
