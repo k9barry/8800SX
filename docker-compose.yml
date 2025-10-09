@@ -33,7 +33,7 @@ services:
       start_period: 60s
 
   viavi-web:
-    image: ghcr.io/k9barry/8800sx:main-web
+    image: ghcr.io/k9barry/8800sx:latest
     container_name: viavi-web
     restart: unless-stopped
     ports:
