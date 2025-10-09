@@ -95,7 +95,7 @@ volumes:
 networks:
   viavi-internal:
     driver: bridge
-  traefik:
-    external: true
+  traefik: {}
+    #external: true
     # Note: The traefik network should already exist in your environment
     # Create it with: docker network create traefik
