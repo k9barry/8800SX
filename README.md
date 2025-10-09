@@ -9,6 +9,7 @@ A multi-container Docker Compose application for parsing and managing output fil
 ## 🚀 Features
 
 - **Multi-Container Architecture**: Separate services for web (Nginx + PHP-FPM) and database (MariaDB)
+- **Flexible Deployment**: Build from source or use pre-built images from GitHub Container Registry
 - **Traefik Integration**: Built-in support for Traefik reverse proxy with automatic HTTPS
 - **File Upload**: Bulk upload of Viavi 8800SX .txt test result files
 - **Database Storage**: Complete test data stored in MySQL with file content as BLOB
@@ -307,6 +308,14 @@ See [Releases](https://github.com/k9barry/8800SX/releases) for complete version 
    \`\`\`bash
    docker compose exec -i viavi-db mysql -u viavi -p viavi < backup.sql
    \`\`\`
+
+## 📚 Additional Documentation
+
+- **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** - Comprehensive guide on build vs pre-built images
+- **[.github/DEPLOYMENT_COMPARISON.md](.github/DEPLOYMENT_COMPARISON.md)** - Side-by-side comparison of deployment methods
+- **[REPOSITORY_STRUCTURE.md](REPOSITORY_STRUCTURE.md)** - Repository organization and architecture
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history and migration guides
+- **[SECURITY.md](SECURITY.md)** - Security policy and best practices
 
 ## 🤝 Contributing
 
