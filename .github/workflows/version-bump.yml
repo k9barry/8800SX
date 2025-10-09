@@ -12,20 +12,20 @@ jobs:
   bump-version:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Determine version bump type
         id: bump-type
         run: |
           LABELS="${{ join(github.event.pull_request.labels.*.name, ',') }}"
           echo "Labels: $LABELS"
-          
+
           if [[ "$LABELS" == *"major"* ]]; then
             echo "type=major" >> $GITHUB_OUTPUT
             echo "Version bump: MAJOR"
@@ -36,30 +36,28 @@ jobs:
             echo "type=patch" >> $GITHUB_OUTPUT
             echo "Version bump: PATCH"
           else
-            echo "type=none" >> $GITHUB_OUTPUT
-            echo "No version label found (major, minor, or patch). Skipping version bump."
+            echo "type=patch" >> $GITHUB_OUTPUT
+            echo "No version label found (major, minor, or patch). Defaulting to PATCH."
           fi
-      
+
       - name: Get current version
         id: current-version
-        if: steps.bump-type.outputs.type != 'none'
         run: |
           # Get the latest tag
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v2.0.0")
           echo "current=$LATEST_TAG" >> $GITHUB_OUTPUT
           echo "Current version: $LATEST_TAG"
-      
+
       - name: Calculate new version
         id: new-version
-        if: steps.bump-type.outputs.type != 'none'
         run: |
           CURRENT="${{ steps.current-version.outputs.current }}"
           # Remove 'v' prefix if present
           CURRENT=${CURRENT#v}
-          
+
           # Split version into components
           IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
-          
+
           # Bump version based on type
           case "${{ steps.bump-type.outputs.type }}" in
             major)
@@ -75,25 +73,66 @@ jobs:
               PATCH=$((PATCH + 1))
               ;;
           esac
-          
+
           NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "New version: $NEW_VERSION"
-      
+
       - name: Create and push tag
-        if: steps.bump-type.outputs.type != 'none'
         run: |
           NEW_VERSION="${{ steps.new-version.outputs.version }}"
-          
+
           # Configure git
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
+
           # Create annotated tag
           git tag -a "$NEW_VERSION" -m "Release $NEW_VERSION"
-          
+
           # Push tag
           git push origin "$NEW_VERSION"
-          
+
           echo "✅ Created and pushed tag: $NEW_VERSION"
           echo "GitHub Actions will automatically build and push Docker images for this tag."
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NEW_VERSION="${{ steps.new-version.outputs.version }}"
+          PREVIOUS_VERSION="${{ steps.current-version.outputs.current }}"
+          BUMP_TYPE="${{ steps.bump-type.outputs.type }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          VERSION_NO_V="${NEW_VERSION#v}"
+
+          # Create release notes
+          echo "## Release ${NEW_VERSION}" > /tmp/release-notes.md
+          echo "" >> /tmp/release-notes.md
+          echo "### Version Information" >> /tmp/release-notes.md
+          echo "- **Release Version:** ${NEW_VERSION}" >> /tmp/release-notes.md
+          echo "- **Previous Version:** ${PREVIOUS_VERSION}" >> /tmp/release-notes.md
+          echo "- **Version Bump Type:** ${BUMP_TYPE}" >> /tmp/release-notes.md
+          echo "" >> /tmp/release-notes.md
+          echo "### Docker Images" >> /tmp/release-notes.md
+          echo "This release includes the following Docker images:" >> /tmp/release-notes.md
+          echo "- \`ghcr.io/k9barry/8800sx:${VERSION_NO_V}-web\`" >> /tmp/release-notes.md
+          echo "- \`ghcr.io/k9barry/8800sx:latest-web\`" >> /tmp/release-notes.md
+          echo "" >> /tmp/release-notes.md
+          echo "### Changes" >> /tmp/release-notes.md
+          echo "Merged PR #${PR_NUMBER}: ${PR_TITLE}" >> /tmp/release-notes.md
+          echo "" >> /tmp/release-notes.md
+          echo "See the [CHANGELOG](https://github.com/k9barry/8800SX/blob/main/CHANGELOG.md) for detailed changes." >> /tmp/release-notes.md
+          echo "" >> /tmp/release-notes.md
+          echo "### Installation" >> /tmp/release-notes.md
+          echo "\`\`\`bash" >> /tmp/release-notes.md
+          echo "docker pull ghcr.io/k9barry/8800sx:${VERSION_NO_V}-web" >> /tmp/release-notes.md
+          echo "\`\`\`" >> /tmp/release-notes.md
+
+          # Create the release
+          gh release create "$NEW_VERSION" \
+            --title "Release $NEW_VERSION" \
+            --notes-file /tmp/release-notes.md \
+            --latest
+
+          echo "✅ Created GitHub Release: $NEW_VERSION"
