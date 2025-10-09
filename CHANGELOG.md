@@ -5,45 +5,55 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.1] - 2025-10-09
+
+### Removed
+
+- **Unified container**: Removed Dockerfile.unified and all unified container support
+- **Unified container documentation**: Removed all references from README.md and REPOSITORY_STRUCTURE.md
+- **Build scripts**: Removed build.sh and test.sh (unified container-specific)
+- **CI/CD**: Removed unified container build job from GitHub Actions workflow
+
+### Changed
+
+- **docker-compose.yml**: Removed unified container service and volumes
+- **CI/CD**: Updated test workflow to use multi-container setup
+- **Documentation**: Simplified all documentation to focus on multi-container architecture only
+
+### Fixed
+
+- **Docker build issue**: Fixed viavi-web service not starting due to missing Dockerfile reference
+
 ## [3.0.0] - 2025-10-08
 
 ### Changed - BREAKING CHANGES
 
-- **Multi-container architecture**: Reverted to multi-container Docker Compose setup
-- **Three services**: Separated into `viavi-web` (Nginx + PHP-FPM), `viavi-db` (MariaDB), and `viavi` (unified, optional)
+- **Multi-container architecture**: Multi-container Docker Compose setup
+- **Two services**: Separated into `viavi-web` (Nginx + PHP-FPM) and `viavi-db` (MariaDB)
 - **Traefik integration**: Built-in Traefik labels on viavi-web service for host `viavi.example.com`
 - **Environment-based configuration**: Expanded `.env` file with `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_ROOT_PASSWORD`
 - **Database connection**: Updated PHP files to support environment variables (DB_HOST, DB_NAME, DB_USER, DB_PASSWORD)
-- **Backward compatibility**: Unified container available via Docker profile for migration
 
 ### Added
 
-- Separate Dockerfile for viavi-web service (Nginx + PHP-FPM without MariaDB)
+- Dockerfile for viavi-web service (Nginx + PHP-FPM without MariaDB)
 - Internal Docker network `viavi-internal` for service communication
 - Traefik external network support
 - Health checks for all services
 - Database initialization via docker-entrypoint-initdb.d
-- Dockerfile.unified for backward compatibility with unified container approach
-
-### Removed
-
-- None in this release; added multi-container support alongside existing unified container
 
 ### Migration Guide
 
-#### From Unified Container (v2.x)
-
-If migrating from unified container deployment:
+#### From Previous Versions
 
 1. Backup your data:
    ```bash
-   docker exec viavi mysqldump -u viavi -pChangeMe viavi > backup.sql
+   docker compose exec viavi-db mysqldump -u viavi -p viavi > backup.sql
    ```
 
-2. Stop old container:
+2. Stop old containers:
    ```bash
-   docker stop viavi
-   docker rm viavi
+   docker compose down
    ```
 
 3. Update configuration:
@@ -64,16 +74,8 @@ If migrating from unified container deployment:
 
 6. Restore data if needed:
    ```bash
-   docker compose exec -i viavi-db mysql -u viavi -pChangeMe viavi < backup.sql
+   docker compose exec -i viavi-db mysql -u viavi -p viavi < backup.sql
    ```
-
-#### Using Unified Container (Backward Compatibility)
-
-To continue using the unified container:
-
-```bash
-docker compose --profile unified up -d
-```
 
 ## [2.0.0] - Previous Release
 

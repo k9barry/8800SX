@@ -38,6 +38,8 @@ services:
       dockerfile: Dockerfile
     container_name: viavi-web
     restart: unless-stopped
+    ports:
+      - "8080:80"
     environment:
       DB_HOST: viavi-db
       DB_NAME: ${DB_NAME:-viavi}
@@ -84,36 +86,10 @@ services:
       retries: 3
       start_period: 60s
 
-  viavi:
-    image: ghcr.io/k9barry/8800sx:latest
-    container_name: viavi
-    restart: unless-stopped
-    environment:
-      - DB_PASSWORD=${DB_PASSWORD:-ChangeMe}
-    volumes:
-      # Persist database data
-      - viavi_unified_data:/var/lib/mysql
-      # Persist uploaded files
-      - viavi_unified_uploads:/var/www/html/uploads
-    networks:
-      - viavi-internal
-    profiles:
-      - unified
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-
 volumes:
   viavi_data:
     driver: local
   viavi_uploads:
-    driver: local
-  viavi_unified_data:
-    driver: local
-  viavi_unified_uploads:
     driver: local
 
 networks:
