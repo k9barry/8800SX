@@ -82,7 +82,7 @@ DB_PASSWORD="${DB_PASSWORD:-ChangeMe}"
 # Wait for database to be ready
 echo "Waiting for database to be ready..."
 for i in {60..0}; do
-    if mysql -h "${DB_HOST}" -u "${DB_USER}" -p"${DB_PASSWORD}" -e "SELECT 1" > /dev/null 2>&1; then
+    if mysql --skip-ssl -h "${DB_HOST}" -u "${DB_USER}" -p"${DB_PASSWORD}" "${DB_NAME}" -e "SELECT 1" > /dev/null 2>&1; then
         echo "Database is ready!"
         break
     fi
