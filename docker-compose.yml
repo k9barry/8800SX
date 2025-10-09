@@ -1,5 +1,5 @@
 # Docker Compose file for 8800SX Viavi Service Monitor Database
-# Multi-container setup with three services
+# Multi-container setup with two services
 #
 # SETUP INSTRUCTIONS:
 # 1. Copy .env.example to .env: cp .env.example .env
@@ -33,9 +33,7 @@ services:
       start_period: 60s
 
   viavi-web:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/k9barry/8800sx:main-web
     container_name: viavi-web
     restart: unless-stopped
     ports:
