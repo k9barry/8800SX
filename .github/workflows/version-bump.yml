@@ -116,8 +116,8 @@ jobs:
           echo "" >> /tmp/release-notes.md
           echo "### Docker Images" >> /tmp/release-notes.md
           echo "This release includes the following Docker images:" >> /tmp/release-notes.md
-          echo "- \`ghcr.io/k9barry/8800sx:${VERSION_NO_V}-web\`" >> /tmp/release-notes.md
-          echo "- \`ghcr.io/k9barry/8800sx:latest-web\`" >> /tmp/release-notes.md
+          echo "- \`ghcr.io/k9barry/8800sx:${VERSION_NO_V}\`" >> /tmp/release-notes.md
+          echo "- \`ghcr.io/k9barry/8800sx:latest\`" >> /tmp/release-notes.md
           echo "" >> /tmp/release-notes.md
           echo "### Changes" >> /tmp/release-notes.md
           echo "Merged PR #${PR_NUMBER}: ${PR_TITLE}" >> /tmp/release-notes.md
@@ -126,7 +126,7 @@ jobs:
           echo "" >> /tmp/release-notes.md
           echo "### Installation" >> /tmp/release-notes.md
           echo "\`\`\`bash" >> /tmp/release-notes.md
-          echo "docker pull ghcr.io/k9barry/8800sx:${VERSION_NO_V}-web" >> /tmp/release-notes.md
+          echo "docker pull ghcr.io/k9barry/8800sx:${VERSION_NO_V}" >> /tmp/release-notes.md
           echo "\`\`\`" >> /tmp/release-notes.md
 
           # Create the release
