@@ -163,11 +163,21 @@ docker exec -it viavi-db /bin/bash
 
 ## 📦 Releases
 
-This project uses semantic versioning (SemVer).
+This project uses semantic versioning (SemVer) with automated release management.
 
-- **v3.0.0**: Multi-container architecture with Traefik integration
-- Web service image: \`ghcr.io/k9barry/8800sx:main-web\`
+### Automated Releases
+
+When a PR is merged to main:
+- A new version is automatically created based on PR labels (`major`, `minor`, `patch`)
+- If no label is present, defaults to `patch` version bump
+- A GitHub Release is created with version details and Docker image tags
+- Docker images are built and pushed to GitHub Container Registry
+
+### Docker Images
+
+- Latest release: \`ghcr.io/k9barry/8800sx:latest-web\`
 - Specific version: \`ghcr.io/k9barry/8800sx:3.0.0-web\`
+- Development: \`ghcr.io/k9barry/8800sx:main-web\`
 
 See [Releases](https://github.com/k9barry/8800SX/releases) for version history.
 
@@ -199,6 +209,15 @@ See [Releases](https://github.com/k9barry/8800SX/releases) for version history.
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+### Version Labels
+
+When submitting a PR, add one of these labels to control versioning:
+- `major` - Breaking changes (e.g., 2.0.0 → 3.0.0)
+- `minor` - New features (e.g., 3.0.0 → 3.1.0)
+- `patch` - Bug fixes (e.g., 3.0.0 → 3.0.1)
+
+If no label is added, the version will be bumped as a `patch` by default.
 
 ## 📄 License
 

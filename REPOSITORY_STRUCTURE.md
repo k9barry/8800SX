@@ -105,6 +105,18 @@ Persistent data is stored in volumes:
 
 ### GitHub Actions
 
+**version-bump.yml** - Automated release management:
+
+Triggers when a PR is merged to main:
+- Detects version label on PR (`major`, `minor`, `patch`)
+- Defaults to `patch` if no label is found
+- Calculates next semantic version
+- Creates and pushes git tag (e.g., `v3.0.1`)
+- Creates GitHub Release with:
+  - Version information
+  - Docker image tags
+  - PR details and changelog link
+
 **docker-build.yml** - Automated build and push workflow:
 
 1. **Test Job** (runs on all pushes and PRs):
@@ -118,11 +130,17 @@ Persistent data is stored in volumes:
 
 ### Semantic Versioning
 
-Tags follow semantic versioning:
+Tags follow semantic versioning and are created automatically when PRs are merged:
 
-- `v3.0.1` → `ghcr.io/k9barry/8800sx:3.0.1-web`, `3.0-web`, `3-web`
+- `v3.0.1` → `ghcr.io/k9barry/8800sx:3.0.1-web`, `3.0-web`, `3-web`, `latest-web`
 - `main` branch → `ghcr.io/k9barry/8800sx:main-web`
 - Commit SHA → `ghcr.io/k9barry/8800sx:<sha>-web`
+
+**Version Labels:**
+- Add `major` label to PR for breaking changes (e.g., 2.0.0 → 3.0.0)
+- Add `minor` label to PR for new features (e.g., 3.0.0 → 3.1.0)
+- Add `patch` label to PR for bug fixes (e.g., 3.0.0 → 3.0.1)
+- No label defaults to `patch` bump
 
 ## Architecture
 
