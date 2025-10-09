@@ -25,8 +25,7 @@ Version 3.0.1 features a multi-container Docker Compose architecture with separa
 ├── .env.example                      # Environment variables template
 ├── .gitignore                        # Git ignore patterns
 ├── CHANGELOG.md                      # Version history and changes
-├── docker-compose.yml                # Multi-container deployment (local build)
-├── docker-compose.prod.yml           # Production deployment (pre-built images)
+├── docker-compose.yml                # Multi-container deployment with Traefik
 ├── Dockerfile                        # Web service (Nginx + PHP-FPM)
 ├── LICENSE                           # MIT License
 ├── README.md                         # Main documentation
@@ -41,8 +40,7 @@ Version 3.0.1 features a multi-container Docker Compose architecture with separa
 | File | Purpose |
 |------|---------|
 | `Dockerfile` | Web service with Nginx and PHP-FPM |
-| `docker-compose.yml` | Multi-container deployment for development (builds from source) |
-| `docker-compose.prod.yml` | Production deployment (uses pre-built images from ghcr.io) |
+| `docker-compose.yml` | Multi-container deployment with Traefik integration |
 | `.env.example` | Environment variables template (copy to `.env`) |
 | `.dockerignore` | Optimizes Docker build by excluding unnecessary files |
 
@@ -143,28 +141,6 @@ The application uses a multi-container architecture:
 - Health checks for all services
 - Traefik labels for automatic HTTPS
 - Persistent volumes for data and uploads
-
-## Deployment Options
-
-### Option 1: Production (Pre-built Images)
-
-Use `docker-compose.prod.yml` for production deployments:
-- Pulls pre-built images from GitHub Container Registry
-- Faster deployment, no local build required
-- Consistent, tested images
-- Command: `docker compose -f docker-compose.prod.yml up -d`
-
-### Option 2: Development (Build from Source)
-
-Use `docker-compose.yml` for development:
-- Builds images locally from source code
-- Allows immediate testing of code changes
-- Full control over build process
-- Command: `docker compose up -d`
-
-**Key Difference:**
-- `docker-compose.yml` - Uses `build:` section to build from `Dockerfile`
-- `docker-compose.prod.yml` - Uses `image:` to pull from `ghcr.io/k9barry/8800sx:main-web`
 
 ## Getting Started
 
