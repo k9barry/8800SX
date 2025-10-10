@@ -17,6 +17,7 @@
         }
     </style>
 </head>
+<?php require_once('security-headers.php'); ?>
 <?php require_once('config.php'); ?>
 <?php require_once('config-tables-columns.php'); ?>
 <?php require_once('helpers.php'); ?>
