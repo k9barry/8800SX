@@ -85,7 +85,7 @@ This document summarizes all changes made to improve the Viavi 8800SX Database p
 ### 2. `data/web/main.php`
 **Security improvements**:
 
-1. **MIME Type Validation** (Lines 62-68):
+1. **MIME Type Validation** (in file upload validation section):
    ```php
    // Validate MIME type for additional security
    $tempname = $_FILES['multiple_files']['tmp_name'][$i];
@@ -100,13 +100,13 @@ This document summarizes all changes made to improve the Viavi 8800SX Database p
    ```
    **Impact**: Prevents attackers from uploading malicious files with .txt extension but different MIME type.
 
-2. **Case-Insensitive Extension Check** (Line 58):
+2. **Case-Insensitive Extension Check** (in file extension validation):
    ```php
    $path_ext = strtolower($path_part['extension']);
    ```
    **Impact**: Prevents bypass using uppercase extensions like .TXT or .Txt.
 
-3. **HTML Escaping** (Lines 60, 68, 108, 110, 113):
+3. **HTML Escaping** (in all error message outputs):
    ```php
    htmlspecialchars($filename[$i])
    ```
@@ -115,13 +115,13 @@ This document summarizes all changes made to improve the Viavi 8800SX Database p
 ### 3. `data/web/upload.php`
 **Changes**:
 
-1. **Security Headers Include** (Line 9):
+1. **Security Headers Include** (at start of file):
    ```php
    include('app/security-headers.php');
    ```
    **Impact**: Adds security headers to the main upload page.
 
-2. **Fixed Hardcoded URL** (Line 40):
+2. **Fixed Hardcoded URL** (in form action attribute):
    - Before: `action="http://localhost:8080/app/alignments-index.php"`
    - After: `action="/app/alignments-index.php"`
    **Impact**: Makes the application work on any host/port combination, not just localhost:8080.
@@ -129,7 +129,7 @@ This document summarizes all changes made to improve the Viavi 8800SX Database p
 ### 4. `data/web/app/alignments-index.php`
 **Changes**:
 
-1. **Security Headers Include** (Line 20):
+1. **Security Headers Include** (at start of PHP section):
    ```php
    <?php require_once('security-headers.php'); ?>
    ```
