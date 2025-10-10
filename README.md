@@ -99,7 +99,7 @@ Example: \`TEST-123456-20231215-143022.txt\`
 
 | Directory | Purpose | Service |
 |-----------|---------|---------|
-| `./viavi/data` | Database files (persistent) | viavi-db |
+| `./viavi/data` | Database files and init-db.sql (persistent) | viavi-db |
 | `./viavi/uploads` | Uploaded test files (persistent) | viavi-web |
 
 ### Networks

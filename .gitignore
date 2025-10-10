@@ -7,7 +7,13 @@
 # Database data and logs  
 /data/db/
 /data/web/uploads/
-/viavi/
+/viavi/*
+!viavi/data/
+viavi/data/*
+!viavi/data/init-db.sql
+!viavi/uploads/
+viavi/uploads/*
+!viavi/uploads/.gitkeep
 *.sql.gz
 *.sql.backup
 
