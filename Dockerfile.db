@@ -1,0 +1,9 @@
+# Custom MariaDB image with embedded init-db.sql
+# This eliminates the need for runtime volume mount of the init script
+FROM mariadb:10.11
+
+# Copy the database initialization script into the image
+COPY data/init-db.sql /docker-entrypoint-initdb.d/init-db.sql
+
+# Set proper permissions (read-only)
+RUN chmod 644 /docker-entrypoint-initdb.d/init-db.sql

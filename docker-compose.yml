@@ -9,7 +9,10 @@
 
 services:
   viavi-db:
-    image: mariadb:10.11
+    build:
+      context: .
+      dockerfile: Dockerfile.db
+    image: ghcr.io/k9barry/8800sx-db:latest
     container_name: viavi-db
     restart: unless-stopped
     command: --skip-ssl
@@ -21,8 +24,6 @@ services:
     volumes:
       # Persist database data
       - ./viavi/data:/var/lib/mysql
-      # Database initialization
-      - ./data/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
     networks:
       - viavi-internal
     healthcheck:

@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Dockerfile.db**: Custom MariaDB Dockerfile that embeds init-db.sql in the image
+- **CI/CD**: Added build-and-push-db job to build and publish database image
+
+### Changed
+
+- **docker-compose.yml**: viavi-db now builds from Dockerfile.db instead of using stock mariadb:10.11 image
+- **docker-compose.yml**: Removed init-db.sql volume mount (now embedded in image)
+- **CI/CD**: Updated test workflow to build both viavi-db and viavi-web services
+- **Documentation**: Updated README.md and REPOSITORY_STRUCTURE.md to reflect custom database image
+
+### Benefits
+
+- **No runtime mount dependency**: Database initialization script is embedded in the image during build
+- **Cleaner deployment**: One less volume mount to configure
+- **Standard practice**: Follows Docker best practices of building custom images when needed
+
 ## [3.0.1] - 2025-10-09
 
 ### Removed
