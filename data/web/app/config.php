@@ -1,27 +1,9 @@
 <?php
 
-// Database configuration - support both environment variables and file-based config
-$db_server              = getenv('DB_HOST') ?: 'viavi-db';
-$db_name                = getenv('DB_NAME') ?: 'viavi';
-$db_user                = getenv('DB_USER') ?: 'viavi';
-
-// Get database password from environment variable or file
-$db_password = getenv('DB_PASSWORD');
-if ($db_password === false) {
-    // Fallback to file-based password for backward compatibility
-    $db_password_file = getenv("DB_PASSWORD_FILE");
-    if ($db_password_file === false) {
-        die("Error: Neither DB_PASSWORD nor DB_PASSWORD_FILE environment variable is set.");
-    }
-    if (!file_exists($db_password_file)) {
-        die("Error: Database password file not found at: " . htmlspecialchars($db_password_file));
-    }
-    $db_password = trim(file_get_contents($db_password_file));
-    if ($db_password === false || $db_password === '') {
-        die("Error: Failed to read database password from file.");
-    }
-}
-
+$db_server              = 'db';
+$db_name                = 'viavi';
+$db_user                = 'viavi';
+$db_password            = trim(file_get_contents(getenv("DB_PASSWORD_FILE")));
 $no_of_records_per_page = '10';
 $appname                = '8800SX';
 $language               = 'en';
@@ -50,23 +32,7 @@ $upload_disallowed_exts = array(
 $protocol               = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https' : 'http';
 $domain                 = $protocol . '://' . $_SERVER['HTTP_HOST']; // Replace domain with your domain name. (Locally typically something like localhost)
 
-try {
-    $link = mysqli_connect($db_server, $db_user, $db_password, $db_name);
-} catch (mysqli_sql_exception $e) {
-    $error_msg = $e->getMessage();
-    // Provide more helpful error message for common socket issues
-    if (strpos($error_msg, 'No such file or directory') !== false) {
-        error_log("Database connection failed: MySQL socket not available. The database may still be initializing.");
-        die("Database connection failed: The database is still starting up. Please wait a moment and refresh the page.");
-    }
-    error_log("Database connection failed: " . $error_msg);
-    die("Database connection failed: " . htmlspecialchars($error_msg));
-}
-if (!$link) {
-    error_log("Database connection failed: " . mysqli_connect_error());
-    die("Database connection failed: " . htmlspecialchars(mysqli_connect_error()));
-}
-
+$link                   = mysqli_connect($db_server, $db_user, $db_password, $db_name);
 $query = "SHOW VARIABLES LIKE 'character_set_database'";
 if ($result = mysqli_query($link, $query)) {
     while ($row = mysqli_fetch_row($result)) {
