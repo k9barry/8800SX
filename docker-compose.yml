@@ -20,7 +20,7 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD:-ChangeMe}
     volumes:
       # Persist database data
-      - viavi_data:/var/lib/mysql
+      - ./viavi/data:/var/lib/mysql
       # Database initialization
       - ./data/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
     networks:
@@ -45,7 +45,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-ChangeMe}
     volumes:
       # Persist uploaded files
-      - viavi_uploads:/var/www/html/uploads
+      - ./viavi/uploads:/var/www/html/uploads
     networks:
       - viavi-internal
       - traefik
@@ -83,12 +83,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
-
-volumes:
-  viavi_data:
-    driver: local
-  viavi_uploads:
-    driver: local
 
 networks:
   viavi-internal:

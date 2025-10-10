@@ -20,6 +20,9 @@ Version 3.0.1 features a multi-container Docker Compose architecture with separa
 │   │   ├── config/                   # Nginx configuration
 │   │   └── uploads/                  # Upload directory (runtime)
 │   └── init-db.sql                   # Database initialization script
+├── viavi/                            # Persistent data (ignored by git)
+│   ├── data/                         # MySQL database files
+│   └── uploads/                      # Uploaded test files
 ├── .dockerignore                     # Files to exclude from Docker build
 ├── .editorconfig                     # Editor configuration
 ├── .env.example                      # Environment variables template
@@ -89,12 +92,12 @@ The multi-container setup includes:
 - **viavi-web**: Nginx + PHP-FPM web application
 - **viavi-db**: MariaDB database server
 
-### Docker Volumes
+### Persistent Data Directories
 
-Persistent data is stored in volumes:
+Persistent data is stored in local bind mounts:
 
-- `viavi_data` - MySQL database files (viavi-db)
-- `viavi_uploads` - Uploaded test files (viavi-web)
+- `./viavi/data` - MySQL database files (viavi-db)
+- `./viavi/uploads` - Uploaded test files (viavi-web)
 
 ### Docker Networks
 
@@ -156,7 +159,7 @@ The application uses a multi-container architecture:
 - Environment variable-based database configuration
 - Health checks for all services
 - Traefik labels for automatic HTTPS
-- Persistent volumes for data and uploads
+- Local bind mounts for persistent data and uploads
 
 ## Getting Started
 
