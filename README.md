@@ -116,7 +116,8 @@ Example: \`TEST-123456-20231215-143022.txt\`
 git clone https://github.com/k9barry/8800SX.git
 cd 8800SX
 
-# Build web service image
+# Build service images
+docker compose build viavi-db
 docker compose build viavi-web
 \`\`\`
 

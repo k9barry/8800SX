@@ -30,6 +30,7 @@ Version 3.0.1 features a multi-container Docker Compose architecture with separa
 ├── CHANGELOG.md                      # Version history and changes
 ├── docker-compose.yml                # Multi-container deployment with Traefik
 ├── Dockerfile                        # Web service (Nginx + PHP-FPM)
+├── Dockerfile.db                     # Database service (MariaDB with init script)
 ├── LICENSE                           # MIT License
 ├── README.md                         # Main documentation
 ├── REPOSITORY_STRUCTURE.md           # This file
@@ -43,6 +44,7 @@ Version 3.0.1 features a multi-container Docker Compose architecture with separa
 | File | Purpose |
 |------|---------|
 | `Dockerfile` | Web service with Nginx and PHP-FPM |
+| `Dockerfile.db` | Database service with embedded init-db.sql |
 | `docker-compose.yml` | Multi-container deployment with Traefik integration |
 | `.env.example` | Environment variables template (copy to `.env`) |
 | `.dockerignore` | Optimizes Docker build by excluding unnecessary files |
