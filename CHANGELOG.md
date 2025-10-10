@@ -5,18 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-### Changed
-
-- **init-db.sql location**: Moved init-db.sql from `./data/` to `./viavi/data/` directory to keep database initialization script alongside database files
-- **docker-compose.yml**: Updated volume mount to use `./viavi/data/init-db.sql` instead of `./data/init-db.sql`
-- **.gitignore**: Updated to track `viavi/data/init-db.sql` and `viavi/uploads/.gitkeep` while ignoring other files in these directories
-
-### Added
-
-- **viavi directory structure**: Added `viavi/data/` and `viavi/uploads/` directories to repository with appropriate .gitkeep files
-
 ## [3.0.1] - 2025-10-09
 
 ### Removed

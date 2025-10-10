@@ -20,9 +20,8 @@ Version 3.0.1 features a multi-container Docker Compose architecture with separa
 │   │   ├── config/                   # Nginx configuration
 │   │   └── uploads/                  # Upload directory (runtime)
 │   └── init-db.sql                   # Database initialization script
-├── viavi/                            # Persistent data (mostly ignored by git)
+├── viavi/                            # Persistent data (ignored by git)
 │   ├── data/                         # MySQL database files
-│   │   └── init-db.sql               # Database initialization script (tracked)
 │   └── uploads/                      # Uploaded test files
 ├── .dockerignore                     # Files to exclude from Docker build
 ├── .editorconfig                     # Editor configuration
@@ -71,8 +70,7 @@ Version 3.0.1 features a multi-container Docker Compose architecture with separa
 | `data/web/` | PHP application files |
 | `data/web/app/` | Core application code |
 | `data/web/config/` | Nginx configuration |
-| `data/init-db.sql` | Database schema initialization (legacy location) |
-| `viavi/data/init-db.sql` | Database schema initialization (active location) |
+| `data/init-db.sql` | Database schema initialization |
 
 ## Configuration
 
@@ -98,7 +96,7 @@ The multi-container setup includes:
 
 Persistent data is stored in local bind mounts:
 
-- `./viavi/data` - MySQL database files and init-db.sql (viavi-db)
+- `./viavi/data` - MySQL database files (viavi-db)
 - `./viavi/uploads` - Uploaded test files (viavi-web)
 
 ### Docker Networks

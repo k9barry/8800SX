@@ -22,7 +22,7 @@ services:
       # Persist database data
       - ./viavi/data:/var/lib/mysql
       # Database initialization
-      - ./viavi/data/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+      - ./data/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
     networks:
       - viavi-internal
     healthcheck:
