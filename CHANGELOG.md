@@ -9,18 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Created SECURITY.md with comprehensive security policy and vulnerability reporting guidelines
-- Created .github/copilot-instructions.md with development guidelines for GitHub Copilot
-- Created CHANGELOG.md to track all future changes
-- Improved README.md with better documentation structure
+- Created .github/copilot-instructions.md with development guidelines for GitHub Copilot and developers
+- Created CHANGELOG.md to track all future changes following Keep a Changelog format
+- Created data/web/app/security-headers.php for centralized security header management
+- Added MIME type validation for file uploads (prevents malicious file uploads)
+- Added HTML escaping to all user-controlled output in error messages
 
 ### Changed
-- Updated README.md with comprehensive project documentation
-- Enhanced security documentation and best practices
+- Completely rewrote README.md with comprehensive documentation including:
+  - Features list, prerequisites, and quick start guide
+  - Detailed installation and usage instructions
+  - Configuration options and file format documentation
+  - Architecture diagram and troubleshooting section
+- Updated data/web/main.php with security improvements:
+  - Case-insensitive file extension checking
+  - MIME type validation using finfo_file()
+  - HTML escaping to prevent XSS attacks
+- Updated data/web/upload.php to use relative URLs instead of hardcoded localhost
+- Added security headers to upload.php and alignments-index.php
 
 ### Security
-- Documented security considerations in SECURITY.md
-- Added security best practices for file uploads, database access, and Docker deployment
-- Included security hardening checklist for production deployments
+- Fixed potential XSS vulnerability in filename display
+- Added MIME type validation to prevent malicious file uploads disguised as .txt files
+- Implemented security headers (X-Frame-Options, CSP, X-Content-Type-Options, etc.)
+- Fixed hardcoded localhost URL to support deployment on any host/port
+- Documented security considerations and best practices in SECURITY.md
+- Added security hardening checklist for production deployments
 
 ## [1.0.0] - Initial Release
 
