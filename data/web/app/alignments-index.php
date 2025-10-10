@@ -38,7 +38,7 @@
                         <a href="alignments-create.php" class="btn btn-success float-right"><?php translate('Add New Record') ?></a>
                         <a href="alignments-index.php" class="btn btn-info float-right mr-2"><?php translate('Reset View') ?></a>
                         <a href="javascript:history.back()" class="btn btn-secondary float-right mr-2"><?php translate('Back') ?></a>
-                        <a href="../upload.php" class="btn btn-primary float-right mr-2"><?php translate('Upload Files') ?></a>
+                        <a href="upload.php" class="btn btn-primary float-right mr-2"><?php translate('Upload Files') ?></a>
                     </div>
 
                     <div class="form-row">

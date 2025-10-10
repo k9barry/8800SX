@@ -33,7 +33,7 @@ $count = 0;  //Get count of successfully uploaded records
 $msg = "";
 $dirname = "uploads";
 array_map('unlink', glob("$dirname/*")); // Remove all files from upload folder
-include('connection.php');
+include('../connection.php');
 
 // Set INSERT statement and prepare
 $sql = "INSERT INTO alignments (datetime, model, serial, file, filename) VALUES (?, ?, ?, ?, ?)";
