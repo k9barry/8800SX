@@ -1,94 +1,58 @@
-# Docker Compose file for 8800SX Viavi Service Monitor Database
-# Multi-container setup with two services
-#
-# SETUP INSTRUCTIONS:
-# 1. Copy .env.example to .env: cp .env.example .env
-# 2. Edit .env and set a secure DB_PASSWORD
-# 3. Create Traefik network: docker network create traefik
-# 4. Deploy: docker compose up -d
-
 services:
-  viavi-db:
+
+  web:
+    image: nginx
+    container_name: nginx
+    restart: always
+    depends_on:
+      - php-fpm
+    ports:
+      - 8080:80
+    volumes:
+      - ./data/web:/var/www/html
+      - ./data/web/uploads:/var/www/html/uploads
+      - ./data/web/config/nginx.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - backend
+
+  php-fpm:
+    container_name: php8.2
+    # Dockerfile path
     build:
       context: .
-      dockerfile: Dockerfile.db
-    image: ghcr.io/k9barry/8800sx-db:latest
-    container_name: viavi-db
-    restart: unless-stopped
-    command: --skip-ssl
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-RootChangeMe}
-      MYSQL_DATABASE: ${DB_NAME:-viavi}
-      MYSQL_USER: ${DB_USER:-viavi}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-ChangeMe}
+      dockerfile: Dockerfile
     volumes:
-      # Persist database data
-      - ./viavi/data:/var/lib/mysql
+      - ./data/web:/var/www/html
+      - ./data/web/uploads:/var/www/html/uploads
+    environment:
+      DB_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_password
     networks:
-      - viavi-internal
-    healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+      - backend
 
-  viavi-web:
-    image: ghcr.io/k9barry/8800sx:latest
-    container_name: viavi-web
-    restart: unless-stopped
-    ports:
-      - "8080:80"
+  db:
+    image: mysql:8.4.2
+    container_name: db
+    restart: always
+    volumes: 
+      - ./data/db/data:/var/lib/mysql
+      - ./data/db/logs:/var/log/mysql
+      - ./data/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     environment:
-      DB_HOST: viavi-db
-      DB_NAME: ${DB_NAME:-viavi}
-      DB_USER: ${DB_USER:-viavi}
-      DB_PASSWORD: ${DB_PASSWORD:-ChangeMe}
-    volumes:
-      # Persist uploaded files
-      - ./viavi/uploads:/var/www/html/uploads
+      MYSQL_RANDOM_ROOT_PASSWORD: true
+      MYSQL_DATABASE: viavi
+      MYSQL_USER: viavi
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_password
     networks:
-      - viavi-internal
-      - traefik
-    depends_on:
-      viavi-db:
-        condition: service_healthy
-    labels:
-      # Enable Traefik for this container
-      - "traefik.enable=true"
-      
-      # HTTP Router
-      - "traefik.http.routers.viavi.rule=Host(`viavi.example.com`)"
-      - "traefik.http.routers.viavi.entrypoints=web"
-      
-      # HTTPS Router (recommended for production)
-      - "traefik.http.routers.viavi-secure.rule=Host(`viavi.example.com`)"
-      - "traefik.http.routers.viavi-secure.entrypoints=websecure"
-      - "traefik.http.routers.viavi-secure.tls=true"
-      - "traefik.http.routers.viavi-secure.tls.certresolver=letsencrypt"
-      
-      # Redirect HTTP to HTTPS (optional)
-      - "traefik.http.middlewares.viavi-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.viavi-redirect.redirectscheme.permanent=true"
-      - "traefik.http.routers.viavi.middlewares=viavi-redirect"
-      
-      # Service configuration
-      - "traefik.http.services.viavi.loadbalancer.server.port=80"
-      
-      # Optional: Add basic auth middleware
-      # - "traefik.http.middlewares.viavi-auth.basicauth.users=user:$$apr1$$..."
-      # - "traefik.http.routers.viavi-secure.middlewares=viavi-auth"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+      - backend
+
+secrets:
+   db_password:
+     file: ./secrets/db_password.txt
 
 networks:
-  viavi-internal:
+  backend:
     driver: bridge
-  traefik:
-    external: true
-    # Note: The traefik network should already exist in your environment
-    # Create it with: docker network create traefik

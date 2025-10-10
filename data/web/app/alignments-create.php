@@ -5,11 +5,6 @@ require_once('helpers.php');
 // Processing form data when form is submitted
 if($_SERVER["REQUEST_METHOD"] == "POST"){
 
-    // Validate CSRF token first
-    if (!validateCSRFToken($_POST['csrf_token'] ?? '')) {
-        $error = "Invalid security token. Please try again.";
-    } else {
-
     // Checking for upload fields
     $upload_results = array();
     if (!empty($_FILES)) {
@@ -68,7 +63,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             }
         }
     }
-    }
 }
 ?>
 
@@ -92,7 +86,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                     <?php print_error_if_exists(@$error); ?>
                     <p><?php translate('add_new_record_instructions') ?></p>
                     <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" enctype="multipart/form-data">
-                        <?php echo getCSRFHiddenInput(); ?>
 
                         <div class="form-group">
                                             <label for="datetime">datetime*</label>

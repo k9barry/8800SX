@@ -6,11 +6,6 @@ require_once('config-tables-columns.php');
 // Process delete operation after confirmation
 if(isset($_POST["id"]) && !empty($_POST["id"])){
 
-    // Validate CSRF token first
-    if (!validateCSRFToken($_POST['csrf_token'] ?? '')) {
-        header("location: error.php");
-        exit();
-    }
 
     // Find uploaded files references for deletion
     $fileColumns = [];
@@ -24,16 +19,10 @@ if(isset($_POST["id"]) && !empty($_POST["id"])){
 
     if (!empty($fileColumns)) {
         foreach ($fileColumns as $columnName) {
-            // Before using $columnName, validate it
-            $validColumns = array_keys($tables_and_columns_names['alignments']['columns']);
-            if (!in_array($columnName, $validColumns, true)) {
-                // Handle invalid column name
-                header("location: error.php");
-                exit();
-            }
-            // Sanitize column name for SQL identifier
-            $safeColumnName = "`" . str_replace("`", "``", $columnName) . "`";
-            $sql = 'SELECT ' . $safeColumnName . ' FROM `alignments` WHERE `id` = ?';
+
+            $sql = "SELECT `" . $columnName . "`
+                    FROM `alignments`
+                    WHERE `id` = ?";
 
             if ($stmt = mysqli_prepare($link, $sql)) {
                 // Set parameters
@@ -74,6 +63,8 @@ if(isset($_POST["id"]) && !empty($_POST["id"])){
         }
     }
 
+
+
     // Prepare a delete statement
     $sql = "DELETE FROM `alignments` WHERE `id` = ?";
 
@@ -82,10 +73,10 @@ if(isset($_POST["id"]) && !empty($_POST["id"])){
         $param_id = trim($_POST["id"]);
 
         // Bind variables to the prepared statement as parameters
-	if (is_int($param_id)) $__vartype = "i";
-	elseif (is_string($param_id)) $__vartype = "s";
-	elseif (is_numeric($param_id)) $__vartype = "d";
-	else $__vartype = "b"; // blob
+		if (is_int($param_id)) $__vartype = "i";
+		elseif (is_string($param_id)) $__vartype = "s";
+		elseif (is_numeric($param_id)) $__vartype = "d";
+		else $__vartype = "b"; // blob
         mysqli_stmt_bind_param($stmt, $__vartype, $param_id);
 
         try {
@@ -132,11 +123,10 @@ if(isset($_POST["id"]) && !empty($_POST["id"])){
                     <div class="page-header">
                         <h1><?php translate ('Delete Record') ?></h1>
                     </div>
-                    <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) . "?id=" . htmlspecialchars($_GET["id"]); ?>" method="post">
-                    <?php echo getCSRFHiddenInput(); ?>
+                    <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) . "?id=" . $_GET["id"]; ?>" method="post">
                     <?php print_error_if_exists(@$error); ?>
                         <div class="alert alert-danger fade-in">
-                            <input type="hidden" name="id" value="<?php echo htmlspecialchars(trim($_GET["id"])); ?>"/>
+                            <input type="hidden" name="id" value="<?php echo trim($_GET["id"]); ?>"/>
                             <p><?php translate('delete_record_confirm') ?></p><br>
                             <p>
                                 <input type="submit" value="<?php translate('Yes') ?>" class="btn btn-danger">
@@ -146,8 +136,8 @@ if(isset($_POST["id"]) && !empty($_POST["id"])){
                     </form>
                     <hr>
                     <p>
-                        <a href="alignments-read.php?id=<?php echo htmlspecialchars($_GET["id"]);?>" class="btn btn-info"><?php translate('View Record') ?></a>
-                        <a href="alignments-update.php?id=<?php echo htmlspecialchars($_GET["id"]);?>" class="btn btn-warning"><?php translate('Update Record') ?></a>
+                        <a href="alignments-read.php?id=<?php echo $_GET["id"];?>" class="btn btn-info"><?php translate('View Record') ?></a>
+                        <a href="alignments-update.php?id=<?php echo $_GET["id"];?>" class="btn btn-warning"><?php translate('Update Record') ?></a>
                         <a href="javascript:history.back()" class="btn btn-primary"><?php translate('Back') ?></a>
                     </p>
                 </div>

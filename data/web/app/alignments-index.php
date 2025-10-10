@@ -43,7 +43,7 @@
                     <div class="form-row">
                         <form action="alignments-index.php" method="get">
                         <div class="col">
-                          <input type="text" class="form-control" placeholder="<?php translate('Search this table') ?>" name="search" value="<?php echo htmlspecialchars($search); ?>">
+                          <input type="text" class="form-control" placeholder="<?php translate('Search this table') ?>" name="search">
                         </div>
                     </div>
                     <br>
@@ -92,21 +92,19 @@
                     $where_columns = array_intersect_key($_GET, array_flip($columns));
                     $get_param = "";
                     $where_statement = " WHERE 1=1 ";
-                    $where_params = array();
-                    $param_types = "";
-                    
                     foreach ( $where_columns as $key => $val ) {
-                        $where_statement .= " AND `$key` = ? ";
-                        $where_params[] = $val;
-                        $param_types .= "s";
-                        $get_param .= "&$key=" . urlencode($val);
+                        $where_statement .= " AND `$key` = '" . mysqli_real_escape_string($link, $val) . "' ";
+                        $get_param .= "&$key=$val";
                     }
 
                     if (!empty($_GET['search'])) {
-                        $search = trim($_GET['search']);
-                        $where_statement .= " AND CONCAT_WS ('', `alignments`.`id`, `alignments`.`datetime`, `alignments`.`model`, `alignments`.`serial`, `alignments`.`entered`, `alignments`.`filename`) LIKE ?";
-                        $where_params[] = '%' . $search . '%';
-                        $param_types .= "s";
+                        $search = mysqli_real_escape_string($link, $_GET['search']);
+                        if (strpos('`alignments`.`id`, `alignments`.`datetime`, `alignments`.`model`, `alignments`.`serial`, `alignments`.`entered`, `alignments`.`filename`', ',')) {
+                            $where_statement .= " AND CONCAT_WS (`alignments`.`id`, `alignments`.`datetime`, `alignments`.`model`, `alignments`.`serial`, `alignments`.`entered`, `alignments`.`filename`) LIKE '%$search%'";
+                        } else {
+                            $where_statement .= " AND `alignments`.`id`, `alignments`.`datetime`, `alignments`.`model`, `alignments`.`serial`, `alignments`.`entered`, `alignments`.`filename` LIKE '%$search%'";
+                        }
+
                     } else {
                         $search = "";
                     }
@@ -114,46 +112,20 @@
                     $order_clause = !empty($order) ? "ORDER BY `$order` $sort" : '';
                     $group_clause = !empty($order) && $order == 'id' ? "GROUP BY `alignments`.`$order`" : '';
 
-                    // Prepare SQL queries with proper parameterization
+                    // Prepare SQL queries
                     $sql = "SELECT `alignments`.* 
                             FROM `alignments` 
                             $where_statement
                             $group_clause
                             $order_clause
-                            LIMIT ?, ?";
+                            LIMIT $offset, $no_of_records_per_page;";
                     $count_pages = "SELECT COUNT(*) AS count FROM `alignments` 
                             $where_statement";
 
-                    // Add LIMIT parameters
-                    $where_params[] = $offset;
-                    $where_params[] = $no_of_records_per_page;
-                    $param_types .= "ii";
-
-                    // Execute count query first
-                    if ($count_stmt = mysqli_prepare($link, $count_pages)) {
-                        if (!empty($where_params) && !empty($param_types)) {
-                            $count_params = array_slice($where_params, 0, -2); // Remove LIMIT params for count
-                            $count_param_types = substr($param_types, 0, -2); // Remove 'ii' for LIMIT
-                            if (!empty($count_params)) {
-                                mysqli_stmt_bind_param($count_stmt, $count_param_types, ...$count_params);
-                            }
-                        }
-                        mysqli_stmt_execute($count_stmt);
-                        $count_result = mysqli_stmt_get_result($count_stmt);
-                        $number_of_results = mysqli_fetch_assoc($count_result)['count'];
-                        $total_pages = ceil($number_of_results / $no_of_records_per_page);
-                        mysqli_stmt_close($count_stmt);
-                    }
-
-                    // Execute main query
-                    if($stmt = mysqli_prepare($link, $sql)){
-                        if (!empty($where_params) && !empty($param_types)) {
-                            mysqli_stmt_bind_param($stmt, $param_types, ...$where_params);
-                        }
-                        mysqli_stmt_execute($stmt);
-                        $result = mysqli_stmt_get_result($stmt);
-                        
+                    if($result = mysqli_query($link, $sql)){
                         if(mysqli_num_rows($result) > 0){
+                            $number_of_results = mysqli_fetch_assoc(mysqli_query($link, $count_pages))['count'];
+                            $total_pages = ceil($number_of_results / $no_of_records_per_page);
                             translate('total_results', true, $number_of_results, $pageno, $total_pages);
                             ?>
 
@@ -163,27 +135,27 @@
                                         <?php 									$columnname = "id";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "asc" ? "desc" : "asc";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "desc" ? "asc" : $sort_link;
-									echo "<th><a href=?search=" . urlencode($search) . "&order=id&sort=".$sort_link.">id</a></th>";
+									echo "<th><a href=?search=$search&order=id&sort=".$sort_link.">id</a></th>";
 									$columnname = "datetime";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "asc" ? "desc" : "asc";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "desc" ? "asc" : $sort_link;
-									echo "<th><a href=?search=" . urlencode($search) . "&order=datetime&sort=".$sort_link.">datetime</a></th>";
+									echo "<th><a href=?search=$search&order=datetime&sort=".$sort_link.">datetime</a></th>";
 									$columnname = "model";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "asc" ? "desc" : "asc";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "desc" ? "asc" : $sort_link;
-									echo "<th><a href=?search=" . urlencode($search) . "&order=model&sort=".$sort_link.">model</a></th>";
+									echo "<th><a href=?search=$search&order=model&sort=".$sort_link.">model</a></th>";
 									$columnname = "serial";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "asc" ? "desc" : "asc";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "desc" ? "asc" : $sort_link;
-									echo "<th><a href=?search=" . urlencode($search) . "&order=serial&sort=".$sort_link.">serial</a></th>";
+									echo "<th><a href=?search=$search&order=serial&sort=".$sort_link.">serial</a></th>";
 									$columnname = "entered";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "asc" ? "desc" : "asc";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "desc" ? "asc" : $sort_link;
-									echo "<th><a href=?search=" . urlencode($search) . "&order=entered&sort=".$sort_link.">entered</a></th>";
+									echo "<th><a href=?search=$search&order=entered&sort=".$sort_link.">entered</a></th>";
 									$columnname = "filename";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "asc" ? "desc" : "asc";
 									$sort_link = isset($_GET["order"]) && $_GET["order"] == $columnname && $_GET["sort"] == "desc" ? "asc" : $sort_link;
-									echo "<th><a href=?search=" . urlencode($search) . "&order=filename&sort=".$sort_link.">filename</a></th>";
+									echo "<th><a href=?search=$search&order=filename&sort=".$sort_link.">filename</a></th>";
  ?>
                                         <th><?php translate('Actions'); ?></th>
                                     </tr>
@@ -275,14 +247,13 @@
                                     </li>
                                 </ul>
 <?php
-                            // Free result set and close statement
+                            // Free result set
                             mysqli_free_result($result);
-                            mysqli_stmt_close($stmt);
                         } else{
                             echo "<p class='lead'><em>" . translate('No records were found.') . "</em></p>";
                         }
                     } else{
-                        echo "ERROR: Could not prepare statement. " . mysqli_error($link);
+                        echo "ERROR: Could not able to execute $sql. " . mysqli_error($link);
                     }
 
                     // Close connection

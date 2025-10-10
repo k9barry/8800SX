@@ -1,5 +1,5 @@
 # Add PHP-FPM 8.2 base image
-FROM php:8.3.2-fpm
+FROM php:8.2-fpm
 # Install your extensions to connect to MySQL and add mysqli
 RUN cp /usr/local/etc/php/php.ini-development /usr/local/etc/php/php.ini && \
     sed -i 's/upload_max_filesize = 2M/upload_max_filesize = 128M/g' /usr/local/etc/php/php.ini && \
