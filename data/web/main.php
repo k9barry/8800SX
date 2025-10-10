@@ -55,13 +55,22 @@ if (isset($_REQUEST['file-upload'])) {
 
     //Skip all files not ending in .txt
     $path_part = pathinfo($filename[$i]);
-    $path_ext = $path_part['extension'];
+    $path_ext = strtolower($path_part['extension']);
     if ($path_ext <> "txt") {
-      $msg .= "File " . $filename[$i] . " does not end in '.txt' unable to upload<br>";
+      $msg .= "File " . htmlspecialchars($filename[$i]) . " does not end in '.txt' unable to upload<br>";
     } else {
+      // Validate MIME type for additional security
+      $tempname = $_FILES['multiple_files']['tmp_name'][$i];
+      $finfo = finfo_open(FILEINFO_MIME_TYPE);
+      $mime_type = finfo_file($finfo, $tempname);
+      finfo_close($finfo);
+      
+      if ($mime_type !== 'text/plain') {
+        $msg .= "File " . htmlspecialchars($filename[$i]) . " has invalid MIME type. Only text files allowed.<br>";
+        continue;
+      }
 
       // Save the remaining files to the upload folder
-      $tempname = $_FILES['multiple_files']['tmp_name'][$i];
       $targetpath = $dirname . "/" . $filename[$i];
       move_uploaded_file($tempname, $targetpath);
 
@@ -96,12 +105,12 @@ if (isset($_REQUEST['file-upload'])) {
 
         if ($statement) {
           $count++;
-          $msg .= "<font color='green'>File " . $filename[$i] . " uploaded successfuly</font><br>";
+          $msg .= "<font color='green'>File " . htmlspecialchars($filename[$i]) . " uploaded successfuly</font><br>";
         } else {
-          $msg .= " File" . $filename[$i] . " Error!<br>";
+          $msg .= " File " . htmlspecialchars($filename[$i]) . " Error!<br>";
         }
       } else {
-        $msg .= "File " . $filename[$i] . " already exists in DB unable to upload<br>";
+        $msg .= "File " . htmlspecialchars($filename[$i]) . " already exists in DB unable to upload<br>";
       }
     }
   }
