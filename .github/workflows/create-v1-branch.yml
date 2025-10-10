@@ -1,0 +1,64 @@
+name: Create v1.0.0 Branch
+
+on:
+  workflow_dispatch:  # Allows manual triggering
+
+permissions:
+  contents: write
+
+jobs:
+  create-branch:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Create and push v1.0.0 branch
+        run: |
+          COMMIT_SHA="bc9bb59008f514bdb6059b4cd04d84bcbe1bfe9b"
+          BRANCH_NAME="v1.0.0"
+          
+          echo "Creating branch $BRANCH_NAME from commit $COMMIT_SHA..."
+          
+          # Verify commit exists
+          if ! git cat-file -t "$COMMIT_SHA" &> /dev/null; then
+            echo "Error: Commit $COMMIT_SHA not found"
+            exit 1
+          fi
+          
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Check if branch exists on remote
+          if git ls-remote --heads origin "$BRANCH_NAME" | grep -q "$BRANCH_NAME"; then
+            echo "Branch $BRANCH_NAME already exists on remote"
+            echo "status=exists" >> $GITHUB_OUTPUT
+          else
+            # Create and push branch
+            git branch "$BRANCH_NAME" "$COMMIT_SHA"
+            git push origin "$BRANCH_NAME"
+            echo "✅ Branch $BRANCH_NAME created and pushed successfully!"
+            echo "status=created" >> $GITHUB_OUTPUT
+          fi
+          
+          # Show branch info
+          echo ""
+          echo "Branch details:"
+          git log --oneline "$BRANCH_NAME" -1
+      
+      - name: Summary
+        run: |
+          echo "### Branch Creation Complete ✅" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Branch \`v1.0.0\` has been created from commit \`bc9bb59008f514bdb6059b4cd04d84bcbe1bfe9b\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit Details:**" >> $GITHUB_STEP_SUMMARY
+          echo "- SHA: \`bc9bb59008f514bdb6059b4cd04d84bcbe1bfe9b\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Message: Created index.php to redirect and changed target to _self" >> $GITHUB_STEP_SUMMARY
+          echo "- Author: K9 Barry <k9barry@gmail.com>" >> $GITHUB_STEP_SUMMARY
+          echo "- Date: Tue Jun 17 12:26:56 2025 -0400" >> $GITHUB_STEP_SUMMARY
