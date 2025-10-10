@@ -95,12 +95,12 @@ Example: \`TEST-123456-20231215-143022.txt\`
 | `DB_PASSWORD` | MySQL database password | `ChangeMe` |
 | `DB_HOST` | MySQL host (for viavi-web) | `viavi-db` |
 
-### Docker Volumes
+### Persistent Data
 
-| Volume | Purpose | Service |
-|--------|---------|---------|
-| `viavi_data` | Database files (persistent) | viavi-db |
-| `viavi_uploads` | Uploaded test files (persistent) | viavi-web |
+| Directory | Purpose | Service |
+|-----------|---------|---------|
+| `./viavi/data` | Database files (persistent) | viavi-db |
+| `./viavi/uploads` | Uploaded test files (persistent) | viavi-web |
 
 ### Networks
 
