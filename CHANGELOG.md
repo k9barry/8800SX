@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Created data/web/app/security-headers.php for centralized security header management
 - Added MIME type validation for file uploads (prevents malicious file uploads)
 - Added HTML escaping to all user-controlled output in error messages
+- Created data/db/init/ directory for database initialization scripts
 
 ### Changed
 - Completely rewrote README.md with comprehensive documentation including:
@@ -28,12 +29,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Removed data/web/Dockerfile (using root Dockerfile with PHP 8.3.2-FPM)
   - Refactored upload.php to match alignments-index.php styling with Bootstrap 4 and navbar
   - Updated all file references and includes to reflect new structure
+  - Moved init-db.sql from data/ to data/db/init/ for better organization
 - Updated data/web/app/main.php with security improvements:
   - Case-insensitive file extension checking
   - MIME type validation using finfo_file()
   - HTML escaping to prevent XSS attacks
-- Updated docker-compose.yml to reference new nginx.conf location
+- Updated docker-compose.yml to reference new init-db.sql location at data/db/init/
 - Added security headers to upload.php and alignments-index.php
+- Fixed Dockerfile to create /var/www/html/app directory before attempting to cd into it
+- Updated .gitignore to allow data/db/init/ directory while still ignoring data/db/data/ and data/db/logs/
+
+### Removed
+- Removed unused connection.php file (functionality merged into config.php)
+- Removed unused result.php file (no longer referenced in the application)
+- Removed tcpdf folder from git tracking (TCPDF is now downloaded during Docker build)
+
+### Fixed
+- Fixed Dockerfile build failure due to missing /var/www/html/app directory
+- Fixed docker-compose.yml to use correct path for init-db.sql
 
 ### Security
 - Fixed potential XSS vulnerability in filename display

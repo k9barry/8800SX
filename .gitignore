@@ -1,5 +1,6 @@
 /.env
-/data/db/
+/data/db/data/
+/data/db/logs/
 /compose-dev.yaml
 /.phpdoc/cache/
 data/web/app/tcpdf/
