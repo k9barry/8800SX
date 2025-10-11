@@ -5,7 +5,7 @@
  * The results file takes the POST value from the upload.php page
  * and searched the DB for a %LIKE% serial (number) value and returns the results
  */
-include('connection.php');
+include('../connection.php');
 header("Content-type: text/plain");
 if ($_REQUEST['serial']) {
   $serial = $_POST['serial'];

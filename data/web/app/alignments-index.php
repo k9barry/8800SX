@@ -19,8 +19,8 @@
 </head>
 <?php require_once('security-headers.php'); ?>
 <?php require_once('config.php'); ?>
-<?php require_once('config-tables-columns.php'); ?>
 <?php require_once('helpers.php'); ?>
+<?php require_once('config-tables-columns.php'); ?>
 <?php require_once('navbar.php'); ?>
 <body>
     <section class="pt-5">
@@ -38,7 +38,7 @@
                         <a href="alignments-create.php" class="btn btn-success float-right"><?php translate('Add New Record') ?></a>
                         <a href="alignments-index.php" class="btn btn-info float-right mr-2"><?php translate('Reset View') ?></a>
                         <a href="javascript:history.back()" class="btn btn-secondary float-right mr-2"><?php translate('Back') ?></a>
-                        <a href="../upload.php" class="btn btn-primary float-right mr-2"><?php translate('Upload Files') ?></a>
+                        <a href="upload.php" class="btn btn-primary float-right mr-2"><?php translate('Upload Files') ?></a>
                     </div>
 
                     <div class="form-row">
@@ -217,7 +217,8 @@
                                                 <?php
                                                 $column_id = 'id';
                                                 if (!empty($column_id)): ?>
-                                                    <a id='read-<?php echo $row['id']; ?>' href='alignments-read.php?id=<?php echo $row['id']; ?>' title='<?php echo addslashes(translate('View Record', false)); ?>' data-toggle='tooltip' class='btn btn-sm btn-info'><i class='far fa-eye'></i></a>
+                                                    <a id='viewfile-<?php echo $row['id']; ?>' href='alignments-view.php?id=<?php echo $row['id']; ?>' title='<?php echo addslashes(translate('View File', false)); ?>' data-toggle='tooltip' class='btn btn-sm btn-primary'><i class='fas fa-file-alt'></i></a>
+                                                    <a id='pdf-<?php echo $row['id']; ?>' href='alignments-pdf.php?id=<?php echo $row['id']; ?>' title='<?php echo addslashes(translate('View as PDF', false)); ?>' data-toggle='tooltip' class='btn btn-sm btn-dark' target='_blank'><i class='fas fa-file-pdf'></i></a>
                                                     <a id='update-<?php echo $row['id']; ?>' href='alignments-update.php?id=<?php echo $row['id']; ?>' title='<?php echo addslashes(translate('Update Record', false)); ?>' data-toggle='tooltip' class='btn btn-sm btn-warning'><i class='far fa-edit'></i></a>
                                                     <a id='delete-<?php echo $row['id']; ?>' href='alignments-delete.php?id=<?php echo $row['id']; ?>' title='<?php echo addslashes(translate('Delete Record', false)); ?>' data-toggle='tooltip' class='btn btn-sm btn-danger'><i class='far fa-trash-alt'></i></a>
                                                 <?php else: ?>

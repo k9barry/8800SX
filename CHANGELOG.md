@@ -21,11 +21,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Detailed installation and usage instructions
   - Configuration options and file format documentation
   - Architecture diagram and troubleshooting section
-- Updated data/web/main.php with security improvements:
+- Reorganized file structure:
+  - Moved main.php, result.php, upload.php, and bootstrap.min.css to data/web/app/ folder
+  - Moved nginx.conf from data/web/config/ to data/web/
+  - Removed data/web/config/ folder completely
+  - Removed data/web/Dockerfile (using root Dockerfile with PHP 8.3.2-FPM)
+  - Refactored upload.php to match alignments-index.php styling with Bootstrap 4 and navbar
+  - Updated all file references and includes to reflect new structure
+- Updated data/web/app/main.php with security improvements:
   - Case-insensitive file extension checking
   - MIME type validation using finfo_file()
   - HTML escaping to prevent XSS attacks
-- Updated data/web/upload.php to use relative URLs instead of hardcoded localhost
+- Updated docker-compose.yml to reference new nginx.conf location
 - Added security headers to upload.php and alignments-index.php
 
 ### Security

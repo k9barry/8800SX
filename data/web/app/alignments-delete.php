@@ -2,12 +2,16 @@
 require_once('config.php');
 require_once('helpers.php');
 require_once('config-tables-columns.php');
-
-// Process delete operation after confirmation
-if(isset($_POST["id"]) && !empty($_POST["id"])){
-
-
-    // Find uploaded files references for deletion
+session_start();
+/**
+ * Handles deletion of alignment records securely.
+ * @author Viavi 8800SX
+ */
+if (isset($_POST["id"]) && !empty($_POST["id"])) {
+    // CSRF token check
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die(translate('Invalid CSRF token.'));
+    }
     $fileColumns = [];
     if (isset($tables_and_columns_names['alignments']['columns'])) {
         foreach ($tables_and_columns_names['alignments']['columns'] as $columnName => $columnDetails) {
@@ -16,67 +20,42 @@ if(isset($_POST["id"]) && !empty($_POST["id"])){
             }
         }
     }
-
     if (!empty($fileColumns)) {
         foreach ($fileColumns as $columnName) {
-
-            $sql = "SELECT `" . $columnName . "`
-                    FROM `alignments`
-                    WHERE `id` = ?";
-
+            $sql = "SELECT `" . $columnName . "` FROM `alignments` WHERE `id` = ?";
             if ($stmt = mysqli_prepare($link, $sql)) {
-                // Set parameters
                 $param_id = trim($_POST["id"]);
-
-                // Bind variables
                 if (is_int($param_id)) $__vartype = "i";
                 elseif (is_string($param_id)) $__vartype = "s";
                 elseif (is_numeric($param_id)) $__vartype = "d";
-                else $__vartype = "b"; // blob
+                else $__vartype = "b";
                 mysqli_stmt_bind_param($stmt, $__vartype, $param_id);
-
-                // Attempt to execute the prepared statement
                 if (mysqli_stmt_execute($stmt)) {
                     $result = mysqli_stmt_get_result($stmt);
-
                     if (mysqli_num_rows($result) == 1) {
-                        /* Fetch result row as an associative array. Since the result set
-                        contains only one row, we don't need to use while loop */
                         $row = mysqli_fetch_array($result, MYSQLI_ASSOC);
                         $fileToDelete = "$upload_target_dir" . $row[$columnName];
                         if (file_exists($fileToDelete)) {
-                            // echo "Delete $columnName: " . $row[$columnName];
                             unlink($fileToDelete);
                         }
-                    }
-                    else {
-                        // URL doesn't contain valid id parameter. Redirect to error page
+                    } else {
                         header("location: error.php");
                         exit();
                     }
-
-                }
-                else {
+                } else {
+                    error_log($stmt->error);
                     echo translate('stmt_error') . "<br>" . $stmt->error;
                 }
             }
         }
     }
-
-
-
-    // Prepare a delete statement
     $sql = "DELETE FROM `alignments` WHERE `id` = ?";
-
-    if($stmt = mysqli_prepare($link, $sql)){
-        // Set parameters
+    if ($stmt = mysqli_prepare($link, $sql)) {
         $param_id = trim($_POST["id"]);
-
-        // Bind variables to the prepared statement as parameters
-		if (is_int($param_id)) $__vartype = "i";
-		elseif (is_string($param_id)) $__vartype = "s";
-		elseif (is_numeric($param_id)) $__vartype = "d";
-		else $__vartype = "b"; // blob
+        if (is_int($param_id)) $__vartype = "i";
+        elseif (is_string($param_id)) $__vartype = "s";
+        elseif (is_numeric($param_id)) $__vartype = "d";
+        else $__vartype = "b";
         mysqli_stmt_bind_param($stmt, $__vartype, $param_id);
 
         try {

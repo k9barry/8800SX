@@ -217,8 +217,8 @@ The file content should be the standard text output from the Viavi 8800SX servic
 ┌─────────────┴───────────────────────────────┐
 │         PHP-FPM 8.3.2                       │
 │  ┌──────────────────────────────────────┐   │
-│  │  Upload Interface (upload.php)       │   │
-│  │  File Parser (main.php)              │   │
+│  │  Upload Interface (app/upload.php)   │   │
+│  │  File Parser (app/main.php)          │   │
 │  │  CRUD Operations (alignments-*.php)  │   │
 │  └──────────────┬───────────────────────┘   │
 └─────────────────┼───────────────────────────┘
@@ -247,7 +247,7 @@ The file content should be the standard text output from the Viavi 8800SX servic
 ### Data Flow
 
 1. User uploads `.txt` files through web interface
-2. `main.php` validates file type and checks for duplicates
+2. `app/main.php` validates file type and checks for duplicates
 3. Filename is parsed to extract metadata (model, serial, date, time)
 4. File content and metadata are stored in MySQL
 5. User can search and view records through CRUD interface

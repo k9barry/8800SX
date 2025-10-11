@@ -82,7 +82,26 @@ This document summarizes all changes made to improve the Viavi 8800SX Database p
 
 **Impact**: Makes the project much more accessible to new users and contributors.
 
-### 2. `data/web/main.php`
+### 2. File Structure Reorganization
+**Changes**: Moved files to app folder and removed config folder.
+
+**Modifications**:
+- Moved `main.php`, `result.php`, `upload.php`, and `bootstrap.min.css` from `data/web/` to `data/web/app/`
+- Moved `nginx.conf` from `data/web/config/` to `data/web/`
+- Removed `data/web/config/` folder completely
+- Removed `data/web/Dockerfile` (now using root Dockerfile with PHP 8.3.2-FPM)
+- Refactored `upload.php` to match `alignments-index.php` styling with Bootstrap 4 navbar
+- Updated file includes in moved files (e.g., `../connection.php`)
+- Updated docker-compose.yml nginx.conf volume mount path
+- Updated nginx.conf to point to `app/upload.php` as the default index
+
+**Impact**: 
+- Cleaner project structure with all application files in the app folder
+- Consistent UI/UX across all pages using the same Bootstrap theme and navbar
+- Simplified Docker configuration with single Dockerfile
+- Easier to maintain with fewer scattered files
+
+### 3. `data/web/app/main.php`
 **Security improvements**:
 
 1. **MIME Type Validation** (in file upload validation section):
@@ -112,7 +131,7 @@ This document summarizes all changes made to improve the Viavi 8800SX Database p
    ```
    **Impact**: Prevents XSS attacks via malicious filenames in error messages.
 
-### 3. `data/web/upload.php`
+### 4. `data/web/app/upload.php`
 **Changes**:
 
 1. **Security Headers Include** (at start of file):
@@ -126,7 +145,7 @@ This document summarizes all changes made to improve the Viavi 8800SX Database p
    - After: `action="/app/alignments-index.php"`
    **Impact**: Makes the application work on any host/port combination, not just localhost:8080.
 
-### 4. `data/web/app/alignments-index.php`
+### 5. `data/web/app/alignments-index.php`
 **Changes**:
 
 1. **Security Headers Include** (at start of PHP section):

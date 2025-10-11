@@ -1,3 +1,4 @@
+<?php require_once('helpers.php'); ?>
 <?php require_once('config-tables-columns.php'); ?>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <a class="navbar-brand nav-link" href="index.php">DB CRUD</a>

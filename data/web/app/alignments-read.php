@@ -2,53 +2,37 @@
 require_once('config.php');
 require_once('helpers.php');
 require_once('config-tables-columns.php');
-
-// Check existence of id parameter before processing further
+/**
+ * Securely reads and displays a single alignment record.
+ * @author Viavi 8800SX
+ */
 $_GET["id"] = trim($_GET["id"]);
-if(isset($_GET["id"]) && !empty($_GET["id"])){
-    // Prepare a select statement
-    $sql = "SELECT `alignments`.* 
-            FROM `alignments` 
-            WHERE `alignments`.`id` = ?
-            GROUP BY `alignments`.`id`;";
-
-    if($stmt = mysqli_prepare($link, $sql)){
-        // Set parameters
-        $param_id = trim($_GET["id"]);
-
-        // Bind variables to the prepared statement as parameters
+if (isset($_GET["id"]) && !empty($_GET["id"])) {
+	$sql = "SELECT `alignments`.* FROM `alignments` WHERE `alignments`.`id` = ? GROUP BY `alignments`.`id`;";
+	if ($stmt = mysqli_prepare($link, $sql)) {
+		$param_id = trim($_GET["id"]);
 		if (is_int($param_id)) $__vartype = "i";
 		elseif (is_string($param_id)) $__vartype = "s";
 		elseif (is_numeric($param_id)) $__vartype = "d";
-		else $__vartype = "b"; // blob
-        mysqli_stmt_bind_param($stmt, $__vartype, $param_id);
-
-        // Attempt to execute the prepared statement
-        if(mysqli_stmt_execute($stmt)){
-            $result = mysqli_stmt_get_result($stmt);
-
-            if(mysqli_num_rows($result) == 1){
-                /* Fetch result row as an associative array. Since the result set
-                contains only one row, we don't need to use while loop */
-                $row = mysqli_fetch_array($result, MYSQLI_ASSOC);
-            } else{
-                // URL doesn't contain valid id parameter. Redirect to error page
-                header("location: error.php");
-                exit();
-            }
-
-        } else{
-            echo translate('stmt_error') . "<br>".$stmt->error;
-        }
-    }
-
-    // Close statement
-    mysqli_stmt_close($stmt);
-
-} else{
-    // URL doesn't contain id parameter. Redirect to error page
-    header("location: error.php");
-    exit();
+		else $__vartype = "b";
+		mysqli_stmt_bind_param($stmt, $__vartype, $param_id);
+		if (mysqli_stmt_execute($stmt)) {
+			$result = mysqli_stmt_get_result($stmt);
+			if (mysqli_num_rows($result) == 1) {
+				$row = mysqli_fetch_array($result, MYSQLI_ASSOC);
+			} else {
+				header("location: error.php");
+				exit();
+			}
+		} else {
+			error_log($stmt->error);
+			echo translate('stmt_error') . "<br>" . $stmt->error;
+		}
+	}
+	mysqli_stmt_close($stmt);
+} else {
+	header("location: error.php");
+	exit();
 }
 ?>
 <!DOCTYPE html>
