@@ -8,114 +8,103 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Created SECURITY.md with comprehensive security policy and vulnerability reporting guidelines
-- Created .github/copilot-instructions.md with development guidelines for GitHub Copilot and developers
-- Created CHANGELOG.md to track all future changes following Keep a Changelog format
-- Created data/web/app/security-headers.php for centralized security header management
-- Added MIME type validation for file uploads (prevents malicious file uploads)
-- Added HTML escaping to all user-controlled output in error messages
-- Created data/db/init/ directory for database initialization scripts
+- New semantic versioning workflow for automated release management
+  - Supports version bumping based on PR labels (major, minor, patch)
+  - Defaults to patch version bump if no label is specified
+  - Automatically creates GitHub releases with version tags
 
 ### Changed
-- Completely rewrote README.md with comprehensive documentation including:
-  - Features list, prerequisites, and quick start guide
-  - Detailed installation and usage instructions
-  - Configuration options and file format documentation
-  - Architecture diagram and troubleshooting section
-- Reorganized file structure:
-  - Moved main.php, result.php, upload.php, and bootstrap.min.css to data/web/app/ folder
-  - Moved nginx.conf from data/web/config/ to data/web/
-  - Removed data/web/config/ folder completely
-  - Removed data/web/Dockerfile (using root Dockerfile with PHP 8.3.2-FPM)
-  - Refactored upload.php to match alignments-index.php styling with Bootstrap 4 and navbar
-  - Updated all file references and includes to reflect new structure
-  - Moved init-db.sql from data/ to data/db/init/ for better organization
-- Updated data/web/app/main.php with security improvements:
-  - Case-insensitive file extension checking
-  - MIME type validation using finfo_file()
-  - HTML escaping to prevent XSS attacks
-- Updated docker-compose.yml to reference new init-db.sql location at data/db/init/
-- Added security headers to upload.php and alignments-index.php
-- Fixed Dockerfile to create /var/www/html/app directory before attempting to cd into it
-- Updated .gitignore to allow data/db/init/ directory while still ignoring data/db/data/ and data/db/logs/
+- Streamlined CI/CD pipeline by replacing Docker-specific workflows with semantic versioning workflow
 
 ### Removed
-- Removed unused connection.php file (functionality merged into config.php)
-- Removed unused result.php file (no longer referenced in the application)
-- Removed tcpdf folder from git tracking (TCPDF is now downloaded during Docker build)
+- Removed docker-image.yml workflow (replaced by semantic versioning workflow)
+- Removed docker-publish.yml workflow (replaced by semantic versioning workflow)
 
-### Fixed
-- Fixed Dockerfile build failure due to missing /var/www/html/app directory
-- Fixed docker-compose.yml to use correct path for init-db.sql
-
-### Security
-- Fixed potential XSS vulnerability in filename display
-- Added MIME type validation to prevent malicious file uploads disguised as .txt files
-- Implemented security headers (X-Frame-Options, CSP, X-Content-Type-Options, etc.)
-- Fixed hardcoded localhost URL to support deployment on any host/port
-- Documented security considerations and best practices in SECURITY.md
-- Added security hardening checklist for production deployments
-
-## [1.0.0] - Initial Release
+## [2.1.0] - 2025-10-11
 
 ### Added
-- Docker Compose setup for Viavi 8800SX service monitor data parsing
-- PHP 8.3.2-FPM based web application
-- MySQL database integration for storing test records
-- File upload functionality for .txt files from Viavi 8800SX service monitor
+- Comprehensive security policy with vulnerability reporting process (SECURITY.md)
+- Development guidelines for GitHub Copilot and contributors (.github/copilot-instructions.md)
+- Centralized security header management (data/web/app/security-headers.php)
+- MIME type validation for file uploads to prevent malicious file disguises
+- HTML escaping for all user-controlled output
+- Database initialization directory structure (data/db/init/)
+
+### Changed
+- Complete documentation overhaul with detailed README.md including:
+  - Feature descriptions and prerequisites
+  - Step-by-step installation and usage guides
+  - Configuration options and troubleshooting
+  - Architecture overview
+- Reorganized application file structure for better maintainability:
+  - Consolidated application files in data/web/app/
+  - Simplified Docker configuration with single Dockerfile
+  - Improved directory organization for database files
+- Enhanced security in file upload handler (main.php):
+  - Case-insensitive file extension validation
+  - MIME type verification using finfo_file()
+  - XSS prevention through proper output escaping
+- Updated Docker configuration:
+  - Fixed PHP-FPM directory creation in build process
+  - Corrected database initialization paths
+  - Updated .gitignore for better database file management
+
+### Removed
+- Legacy connection.php file (merged into config.php)
+- Unused result.php file
+- TCPDF from version control (now downloaded during build)
+- Obsolete config directory structure
+
+### Fixed
+- Docker build failures due to missing directory structures
+- Incorrect database initialization file paths
+- Hardcoded localhost URLs preventing flexible deployment
+
+### Security
+- XSS vulnerability in filename display
+- File upload security with MIME type validation
+- Comprehensive security headers (X-Frame-Options, CSP, X-Content-Type-Options, etc.)
+- Production deployment security checklist and best practices
+
+## [1.0.0] - 2024-10-01
+
+### Added
+- Initial Docker Compose setup for Viavi 8800SX service monitor
+- PHP 8.3.2-FPM web application
+- MySQL database with PHPMyAdmin integration
+- File upload system for .txt service monitor output files
+- Automated parsing and database storage of test records
 - CRUD operations for alignment records
-- Search functionality for database records
-- Multi-language support (English, Spanish, French, German, Italian, Portuguese, Dutch, Russian, Chinese, Japanese, Indonesian, Czech)
-- Bootstrap 4.5.0 based responsive UI
-- PHPMyAdmin integration for database management
-- Automated file parsing and database insertion
+- Multi-language support (12 languages)
+- Bootstrap 4.5.0 responsive UI
+- Search and filter functionality
 - BLOB storage for complete service records
-- Docker image CI/CD pipeline via GitHub Actions
-
-### Features
-- Upload multiple .txt files simultaneously
-- Automatic parsing of filename to extract:
-  - Test datetime
-  - Radio model
-  - Serial number
-- Duplicate file detection
-- File extension validation
-- Search and view alignment records
-- Export and manage records through PHPMyAdmin
-
-### Configuration
-- Configurable database password via `/secrets/db_password.txt`
-- File upload limits (128MB max upload size, 1000 max files)
-- Configurable disallowed file extensions for security
-- Multi-language support configuration
-
----
 
 ## How to Use This Changelog
 
 ### For Contributors
-When making changes, add them under the `[Unreleased]` section using these categories:
-
-- **Added** - for new features
-- **Changed** - for changes in existing functionality
-- **Deprecated** - for soon-to-be removed features
-- **Removed** - for now removed features
-- **Fixed** - for any bug fixes
-- **Security** - for vulnerability fixes
+Add changes to the `[Unreleased]` section using these categories:
+- **Added** - new features
+- **Changed** - changes to existing functionality
+- **Deprecated** - soon-to-be removed features
+- **Removed** - removed features
+- **Fixed** - bug fixes
+- **Security** - security fixes
 
 ### For Maintainers
 When releasing a new version:
 1. Move items from `[Unreleased]` to a new version section
-2. Add the version number and date: `## [X.Y.Z] - YYYY-MM-DD`
-3. Create a new empty `[Unreleased]` section
-4. Update version links at the bottom of the file
+2. Add version number and date: `## [X.Y.Z] - YYYY-MM-DD`
+3. Create new empty `[Unreleased]` section
+4. Update version comparison links below
 
 ### Version Format
-- **MAJOR** version (X.0.0) - incompatible API changes
-- **MINOR** version (0.X.0) - backwards-compatible new functionality
-- **PATCH** version (0.0.X) - backwards-compatible bug fixes
+- **MAJOR** (X.0.0) - Incompatible API changes
+- **MINOR** (0.X.0) - Backwards-compatible new functionality
+- **PATCH** (0.0.X) - Backwards-compatible bug fixes
 
 ---
 
-[Unreleased]: https://github.com/k9barry/viavi/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/k9barry/viavi/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/k9barry/viavi/releases/tag/v2.1.0
 [1.0.0]: https://github.com/k9barry/viavi/releases/tag/v1.0.0
