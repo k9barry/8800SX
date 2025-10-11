@@ -38,7 +38,7 @@ services:
     volumes: 
       - ./data/db/data:/var/lib/mysql
       - ./data/db/logs:/var/log/mysql
-      - ./data/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+      - ./data/db/init/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     environment:
       MYSQL_RANDOM_ROOT_PASSWORD: true
       MYSQL_DATABASE: viavi

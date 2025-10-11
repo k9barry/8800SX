@@ -228,3 +228,69 @@ These changes significantly improve the project's:
 - **User Experience**: Better onboarding and troubleshooting
 
 All changes follow the principle of minimal modifications while providing maximum value.
+
+---
+
+# Update: Cleanup and Refactoring (October 2025)
+
+## Additional Files Removed
+
+### 1. `data/web/connection.php`
+**Reason**: Removed as unused - only referenced by the obsolete result.php file. Database connection logic is already handled in config.php which is used by all active PHP files.
+
+### 2. `data/web/app/result.php`
+**Reason**: Removed as unused - no references found in any active code or UI elements. This appears to be legacy code from a previous version.
+
+## Files Moved
+
+### 1. `data/init-db.sql` → `data/db/init/init-db.sql`
+**Reason**: Better organization - database initialization script should be in the database directory structure.
+**Impact**: Updated docker-compose.yml volume mount path accordingly.
+
+## Files Modified
+
+### 1. `Dockerfile`
+**Changes**:
+- Added `mkdir -p /var/www/html/app` before attempting to cd into it
+- Added `--no-check-certificate` to wget command for TCPDF download (addresses certificate issues in build environments)
+
+**Reason**: Fixed broken Docker build that was failing because /var/www/html/app didn't exist at build time.
+
+### 2. `.gitignore`
+**Changes**:
+- Changed `/data/db/` to `/data/db/data/` and `/data/db/logs/`
+- This allows the new `/data/db/init/` directory to be tracked in git
+
+**Reason**: Need to track the init-db.sql file while still ignoring database data and log files.
+
+### 3. `docker-compose.yml`
+**Changes**:
+- Updated volume mount from `./data/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql` to `./data/db/init/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql`
+
+**Reason**: Reflects the new location of init-db.sql.
+
+### 4. `.github/copilot-instructions.md`
+**Changes**:
+- Updated file structure documentation to reflect removal of connection.php and addition of data/db/init/ directory
+
+**Reason**: Keep development documentation accurate and up-to-date.
+
+### 5. `CHANGELOG.md`
+**Changes**:
+- Added entries for removed files, moved files, and fixes to the Unreleased section
+
+**Reason**: Maintain accurate change history.
+
+## Summary of This Update
+
+- **Files Removed**: 2 (connection.php, result.php)
+- **Files Moved**: 1 (init-db.sql)
+- **Files Modified**: 5 (Dockerfile, .gitignore, docker-compose.yml, copilot-instructions.md, CHANGELOG.md)
+- **Workflows Fixed**: Docker build now completes successfully
+- **Documentation Updated**: All cross-references corrected
+
+This cleanup improves the project by:
+- Removing dead code that could confuse developers
+- Better organizing database-related files
+- Fixing broken Docker build workflow
+- Keeping documentation synchronized with actual code structure

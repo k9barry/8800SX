@@ -31,13 +31,15 @@ This is a Docker Compose project that processes output files from a Viavi 8800SX
 ### File Structure
 ```
 /data/web/
-├── main.php           # File upload handler
-├── connection.php     # Database connection
-├── upload.php         # Upload UI
+├── nginx.conf         # Nginx configuration
 └── app/
-    ├── config.php     # Application configuration
+    ├── config.php     # Application configuration & DB connection
+    ├── main.php       # File upload handler
+    ├── upload.php     # Upload UI
     ├── alignments-*.php  # CRUD operations
     └── locales/       # Internationalization files
+/data/db/init/
+└── init-db.sql        # Database initialization script
 ```
 
 ## Security Considerations
