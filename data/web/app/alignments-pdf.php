@@ -29,7 +29,7 @@ $stmt->bind_result($filename, $file_contents);
 $stmt->fetch();
 $stmt->close();
 $link->close();
-require_once(__DIR__ . '/tcpdf/tcpdf.php');
+require_once('/usr/local/lib/tcpdf/tcpdf.php');
 
 $pdf = new TCPDF('P', 'mm', 'A4'); // Landscape, millimeters, A4
 $pdf->SetCreator(PDF_CREATOR);
