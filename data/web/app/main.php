@@ -41,6 +41,15 @@ $count = 0;  //Get count of successfully uploaded records
 $msg = "";
 
 $dirname = "uploads";
+
+// Create uploads directory if it doesn't exist
+if (!file_exists($dirname)) {
+    mkdir($dirname, 0777, true);
+    error_log("[DEBUG] Created uploads directory: " . $dirname);
+    // Write a dummy index file to prevent directory listing
+    file_put_contents($dirname . '/index.php', '');
+}
+
 array_map('unlink', glob("$dirname/*")); // Remove all files from upload folder
 require_once('config.php');
 
@@ -85,7 +94,12 @@ $db = []; // create empty array
 
       // Save the remaining files to the upload folder
             $targetpath = $dirname . "/" . $filename[$i];
-      move_uploaded_file($tempname, $targetpath);
+      if (!move_uploaded_file($tempname, $targetpath)) {
+          $msg .= "File " . htmlspecialchars($filename[$i]) . " failed to upload to server.<br>";
+          error_log("[ERROR] Failed to move uploaded file to: " . $targetpath);
+          continue;
+      }
+      error_log("[DEBUG] File successfully moved to: " . $targetpath);
 
       // Check if uploaded filename is not in array of DB names
             if (!in_array($filename[$i], $db)) {
@@ -111,6 +125,13 @@ $db = []; // create empty array
                 $model = $filevalue[0];
                 $serial = $filevalue[1];
         $file_contents = file_get_contents($targetpath); // Read the file contents to String String once it been uploaded for insert into DB
+        
+        if ($file_contents === false) {
+            $msg .= "File " . htmlspecialchars($filename[$i]) . " could not be read from disk.<br>";
+            error_log("[ERROR] Failed to read file contents from: " . $targetpath);
+            continue;
+        }
+        error_log("[DEBUG] File contents read successfully, length: " . strlen($file_contents));
 
       // Bind the statement and execute
             $statement->bind_param("sssss", $datetime, $model, $serial, $file_contents, $filename[$i]);
