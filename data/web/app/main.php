@@ -1,4 +1,11 @@
 <?php
+error_log('[DEBUG] main.php started');
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+ini_set('log_errors', 1);
+ini_set('error_log', '/tmp/php-errors.log');
+
 
 /**
  * The main.php file does the uploading of the files.
@@ -13,7 +20,7 @@
  * 
  * The order of events is:
  * 1. ./uploads folder is cleared of contents (unlink)
- * 2. Load the connection.php file to connect to DB
+ * 2. Load the config.php file to connect to DB
  * 3. POST from upload.php page calls main.php to upload all selected files
  * 4. SET and PREPARE the INSERT statement
  * 5. Array $db Get all filenames in the DB and place in array
@@ -32,17 +39,18 @@
  */
 $count = 0;  //Get count of successfully uploaded records
 $msg = "";
+
 $dirname = "uploads";
 array_map('unlink', glob("$dirname/*")); // Remove all files from upload folder
-include('config.php');
+require_once('config.php');
 
     // Set INSERT statement and prepare
     $sql = "INSERT INTO alignments (datetime, model, serial, file, filename) VALUES (?, ?, ?, ?, ?)";
-    $statement = $connection->prepare($sql);
+    $statement = $link->prepare($sql);
 
     // Get all filenames from DB and place in array $db
     $sqlFind = 'SELECT `filename` FROM `alignments`';
-    $result = mysqli_query($connection, $sqlFind);
+    $result = mysqli_query($link, $sqlFind);
 $db = []; // create empty array
     while ($row = mysqli_fetch_row($result)) {
   array_push($db, $row[0]);
@@ -51,15 +59,19 @@ $db = []; // create empty array
     if (isset($_REQUEST['file-upload'])) {
 
   // Loop thru upladed files and get info to put into DB
-        for ($i = 0; $i < count($_FILES['multiple_files']['name']); $i++) {
-            $filename[] = basename($_FILES['multiple_files']['name'][$i]);
+    for ($i = 0; $i < count($_FILES['multiple_files']['name']); $i++) {
+      $filename[] = basename($_FILES['multiple_files']['name'][$i]);
+      error_log("[DEBUG] Processing file: " . $filename[$i]);
 
-    //Skip all files not ending in .txt
-            $path_part = pathinfo($filename[$i]);
-            $path_ext = strtolower($path_part['extension']);
-    if ($path_ext <> "txt") {
-      $msg .= "File " . htmlspecialchars($filename[$i]) . " does not end in '.txt' unable to upload<br>";
-    } else {
+      //Skip all files not ending in .txt
+      $path_part = pathinfo($filename[$i]);
+      $path_ext = strtolower($path_part['extension']);
+      error_log("[DEBUG] File extension: " . $path_ext);
+      if ($path_ext <> "txt") {
+        $msg .= "File " . htmlspecialchars($filename[$i]) . " does not end in '.txt' unable to upload<br>";
+        error_log("[DEBUG] Skipping file (not .txt): " . $filename[$i]);
+        continue;
+      } else {
       // Validate MIME type for additional security
             $tempname = $_FILES['multiple_files']['tmp_name'][$i];
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
@@ -100,16 +112,14 @@ $db = []; // create empty array
                 $serial = $filevalue[1];
         $file_contents = file_get_contents($targetpath); // Read the file contents to String String once it been uploaded for insert into DB
 
-        // Bind the statement and execute
-                $statement->bind_param("sssss", $datetime, $model, $serial, $file_contents, $filename[$i]);
-        $statement->execute();  // Execute the mysql statement
-
-        if ($statement) {
-                    $count++;
-          $msg .= "<font color='green'>File " . htmlspecialchars($filename[$i]) . " uploaded successfuly</font><br>";
-                } else {
+      // Bind the statement and execute
+            $statement->bind_param("sssss", $datetime, $model, $serial, $file_contents, $filename[$i]);
+        if ($statement->execute()) {
+          $count++;
+          $msg .= "<font color='green'>File " . htmlspecialchars($filename[$i]) . " uploaded successfully</font><br>";
+        } else {
           $msg .= " File " . htmlspecialchars($filename[$i]) . " Error!<br>";
-                }
+        }
             } else {
         $msg .= "File " . htmlspecialchars($filename[$i]) . " already exists in DB unable to upload<br>";
             }
@@ -119,4 +129,5 @@ $db = []; // create empty array
 if ($count > 0) {
   $msg .= "<br><font color='green'>!!!!! " . $count . " files uploaded successfuly to the DB !!!!!</font><br>";
 }
+error_log('[DEBUG] main.php completed');
 ?>
