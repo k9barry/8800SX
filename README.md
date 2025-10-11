@@ -188,6 +188,19 @@ ports:
   - "8080:80"  # Change 8080 to your desired port
 ```
 
+### Traefik Integration
+
+For production deployments with SSL/TLS support and reverse proxy functionality, see:
+
+- **[TRAEFIK-QUICKSTART.md](TRAEFIK-QUICKSTART.md)** - Quick start guide (10 minutes)
+- **[TRAEFIK.md](TRAEFIK.md)** - Complete integration guide with examples
+
+Traefik provides:
+- Automatic HTTPS with Let's Encrypt
+- Easy multi-domain hosting
+- Load balancing and service discovery
+- Built-in monitoring dashboard
+
 ## 📄 File Format
 
 The application expects files from Viavi 8800SX with the following naming convention:

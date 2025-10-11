@@ -1,0 +1,112 @@
+version: '3.8'
+
+# Example docker-compose.yml configured for Traefik integration
+# 
+# BEFORE USING:
+# 1. Create Traefik network: docker network create traefik-public
+# 2. Replace 'viavi.example.com' with your actual domain
+# 3. Ensure Traefik is running (see docker-compose.traefik.yml)
+# 4. Set database password: echo "YourPassword" > secrets/db_password.txt
+#
+# TO USE:
+# Rename this file to docker-compose.yml or merge labels into your existing file
+
+services:
+
+  web:
+    image: nginx
+    container_name: viavi-web
+    restart: always
+    depends_on:
+      - php-fpm
+    # NOTE: No port binding needed when using Traefik
+    # Traefik will route traffic to this container
+    volumes:
+      - ./data/web:/var/www/html
+      - ./data/web/uploads:/var/www/html/uploads
+      - ./data/web/nginx.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - traefik-public  # External network for Traefik
+      - viavi-backend   # Internal network for app components
+    labels:
+      # Enable Traefik for this container
+      traefik.enable: "true"
+      
+      # Specify the network Traefik should use to connect
+      traefik.docker.network: "traefik-public"
+      
+      # HTTP Router (will redirect to HTTPS)
+      traefik.http.routers.viavi-http.rule: "Host(`viavi.example.com`)"
+      traefik.http.routers.viavi-http.entrypoints: "web"
+      traefik.http.routers.viavi-http.middlewares: "viavi-redirect-https"
+      
+      # HTTPS Router
+      traefik.http.routers.viavi-https.rule: "Host(`viavi.example.com`)"
+      traefik.http.routers.viavi-https.entrypoints: "websecure"
+      traefik.http.routers.viavi-https.tls: "true"
+      traefik.http.routers.viavi-https.tls.certresolver: "letsencrypt"
+      
+      # Middleware: Redirect HTTP to HTTPS
+      traefik.http.middlewares.viavi-redirect-https.redirectscheme.scheme: "https"
+      traefik.http.middlewares.viavi-redirect-https.redirectscheme.permanent: "true"
+      
+      # Tell Traefik which port the service uses internally
+      traefik.http.services.viavi-service.loadbalancer.server.port: "80"
+      
+      # Optional: Add security headers
+      traefik.http.middlewares.viavi-headers.headers.sslRedirect: "true"
+      traefik.http.middlewares.viavi-headers.headers.stsSeconds: "31536000"
+      traefik.http.middlewares.viavi-headers.headers.stsIncludeSubdomains: "true"
+      traefik.http.middlewares.viavi-headers.headers.stsPreload: "true"
+      traefik.http.middlewares.viavi-headers.headers.forceSTSHeader: "true"
+      
+      # Optional: Apply security headers middleware to HTTPS router
+      # traefik.http.routers.viavi-https.middlewares: "viavi-headers"
+
+  php-fpm:
+    container_name: viavi-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - ./data/web:/var/www/html
+      - ./data/web/uploads:/var/www/html/uploads
+    environment:
+      DB_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_password
+    networks:
+      - viavi-backend  # Only needs internal network
+
+  db:
+    image: mysql:8.4.2
+    container_name: viavi-db
+    restart: always
+    volumes: 
+      - ./data/db/data:/var/lib/mysql
+      - ./data/db/logs:/var/log/mysql
+      - ./data/db/init/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: "true"
+      MYSQL_DATABASE: viavi
+      MYSQL_USER: viavi
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_password
+    networks:
+      - viavi-backend  # Only needs internal network
+
+secrets:
+   db_password:
+     file: ./secrets/db_password.txt
+
+networks:
+  # External network that Traefik manages
+  # Must be created before starting: docker network create traefik-public
+  traefik-public:
+    external: true
+    
+  # Internal network for application components
+  viavi-backend:
+    driver: bridge

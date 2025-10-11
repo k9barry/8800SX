@@ -1,0 +1,89 @@
+version: '3.8'
+
+# Standalone Traefik setup
+# This file sets up Traefik as a reverse proxy with SSL/TLS support
+#
+# BEFORE STARTING:
+# 1. Create acme.json: touch traefik/acme.json && chmod 600 traefik/acme.json
+# 2. Create traefik.yml configuration file (see TRAEFIK.md)
+# 3. Update email address in traefik.yml for Let's Encrypt
+# 4. Create network: docker network create traefik-public
+#
+# TO START:
+# docker compose -f docker-compose.traefik-standalone.yml up -d
+#
+# Then start your Viavi application with the Traefik-enabled compose file
+
+services:
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    restart: always
+    ports:
+      # HTTP port
+      - "80:80"
+      # HTTPS port
+      - "443:443"
+      # Traefik Dashboard (optional, can be removed for security)
+      # Access at: http://localhost:8081 or configure with domain
+      - "8081:8080"
+    command:
+      # Enable Docker provider
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=traefik-public"
+      
+      # Define entrypoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      
+      # Enable dashboard (remove these lines in production if not needed)
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+      
+      # Let's Encrypt configuration
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.email=your-email@example.com"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/acme.json"
+      
+      # Logging
+      - "--log.level=INFO"
+      - "--accesslog=true"
+      
+      # Global redirect to HTTPS (optional)
+      # - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      # - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+    volumes:
+      # Docker socket for service discovery
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Certificate storage
+      - ./traefik/acme.json:/acme.json
+    networks:
+      - traefik-public
+    labels:
+      # Enable Traefik for the dashboard itself
+      traefik.enable: "true"
+      
+      # Dashboard router (optional)
+      traefik.http.routers.traefik-dashboard.rule: "Host(`traefik.example.com`)"
+      traefik.http.routers.traefik-dashboard.entrypoints: "websecure"
+      traefik.http.routers.traefik-dashboard.tls: "true"
+      traefik.http.routers.traefik-dashboard.tls.certresolver: "letsencrypt"
+      traefik.http.routers.traefik-dashboard.service: "api@internal"
+      
+      # Optional: Add basic auth to dashboard
+      # Generate password: htpasswd -nb admin password
+      # traefik.http.routers.traefik-dashboard.middlewares: "dashboard-auth"
+      # traefik.http.middlewares.dashboard-auth.basicauth.users: "admin:$$apr1$$xyz..."
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+networks:
+  traefik-public:
+    name: traefik-public
+    driver: bridge
