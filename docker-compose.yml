@@ -15,9 +15,8 @@ services:
     networks:
       - backend
 
-  php-fpm:
-    container_name: php8.2
-    # Dockerfile path
+  app:
+    container_name: viavi
     build:
       context: .
       dockerfile: Dockerfile
