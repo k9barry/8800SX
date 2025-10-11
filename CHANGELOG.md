@@ -42,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Removed unused connection.php file (functionality merged into config.php)
 - Removed unused result.php file (no longer referenced in the application)
+- Removed tcpdf folder from git tracking (TCPDF is now downloaded during Docker build)
 
 ### Fixed
 - Fixed Dockerfile build failure due to missing /var/www/html/app directory

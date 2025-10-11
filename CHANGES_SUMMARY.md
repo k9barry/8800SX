@@ -241,6 +241,10 @@ All changes follow the principle of minimal modifications while providing maximu
 ### 2. `data/web/app/result.php`
 **Reason**: Removed as unused - no references found in any active code or UI elements. This appears to be legacy code from a previous version.
 
+### 3. `data/web/app/tcpdf/` folder
+**Reason**: Removed from git tracking - TCPDF library is now downloaded during Docker build process (Dockerfile downloads v6.7.7). The folder is already in .gitignore, but some files were tracked before the rule was added.
+**Impact**: Reduces repository size and ensures consistent TCPDF version across all deployments.
+
 ## Files Moved
 
 ### 1. `data/init-db.sql` → `data/db/init/init-db.sql`
