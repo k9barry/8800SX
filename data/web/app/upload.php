@@ -33,8 +33,6 @@
 <?php require_once('security-headers.php'); ?>
 <?php require_once('config.php'); ?>
 <?php require_once('config-tables-columns.php'); ?>
-<?php require_once('helpers.php'); ?>
-<?php require_once('main.php'); ?>
 <?php require_once('navbar.php'); ?>
 <body>
     <section class="pt-5">
@@ -48,13 +46,16 @@
                     </div>
 
                     <div class="box mt-4">
-                        <form method="post" enctype="multipart/form-data">
+                        <?php if (session_status() === PHP_SESSION_NONE) session_start(); ?>
+                        <form method="post" enctype="multipart/form-data" autocomplete="off">
+                            <input type="hidden" name="csrf_token" value="<?php echo isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : ($_SESSION['csrf_token'] = bin2hex(random_bytes(32))); ?>">
                             <div class="form-group">
                                 <label for="multiple_files"><?php translate('Select Multiple Files - then press SUBMIT') ?></label>
                                 <input type="file" name="multiple_files[]" id="multiple_files" class="form-control" multiple required />
                             </div>
                             <div class="form-group">
-                                <input type="submit" id="file-upload" name="file-upload" value="<?php translate('Submit') ?>" class="btn btn-success" />
+                                <input type="button" id="file-upload" value="<?php translate('Submit') ?>" class="btn btn-success" />
+                                <div id="batch-status"></div>
                             </div>
                             <?php if (!empty($msg)) { ?>
                                 <div class="alert alert-info mt-3" role="alert">
@@ -73,6 +74,60 @@
     <script type="text/javascript">
         $(document).ready(function(){
             $('[data-toggle="tooltip"]').tooltip();
+            // Batch upload logic
+            $('#file-upload').on('click', function(e) {
+                e.preventDefault();
+                var files = $('#multiple_files')[0].files;
+                var batchSize = 10;
+                var totalBatches = Math.ceil(files.length / batchSize);
+                var batchStatus = $('#batch-status');
+                batchStatus.html('');
+                if (files.length === 0) {
+                    batchStatus.html('<div class="error">' + <?php echo json_encode(translate('No files selected', false)); ?> + '</div>');
+                    return;
+                }
+                // Client-side file validation
+                var maxSize = 128 * 1024 * 1024; // 128MB
+                for (var i = 0; i < files.length; i++) {
+                    if (files[i].size > maxSize) {
+                        batchStatus.html('<div class="error">' + files[i].name + ': ' + <?php echo json_encode(translate('File exceeds maximum size', false)); ?> + '</div>');
+                        return;
+                    }
+                    if (!files[i].name.toLowerCase().endsWith('.txt')) {
+                        batchStatus.html('<div class="error">' + files[i].name + ': ' + <?php echo json_encode(translate('File must be .txt', false)); ?> + '</div>');
+                        return;
+                    }
+                }
+                function uploadBatch(batchIndex) {
+                    if (batchIndex >= totalBatches) {
+                        batchStatus.append('<div class="alert alert-success mt-3">All batches uploaded.</div>');
+                        return;
+                    }
+                    var formData = new FormData();
+                    var start = batchIndex * batchSize;
+                    var end = Math.min(start + batchSize, files.length);
+                    for (var i = start; i < end; i++) {
+                        formData.append('multiple_files[]', files[i]);
+                    }
+                    formData.append('file-upload', 'Submit');
+                    batchStatus.append('<div>Uploading batch ' + (batchIndex + 1) + ' of ' + totalBatches + '...</div>');
+                    $.ajax({
+                        url: '',
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function(response) {
+                            batchStatus.append('<div class="alert alert-info mt-3">Batch ' + (batchIndex + 1) + ' uploaded.</div>');
+                            uploadBatch(batchIndex + 1);
+                        },
+                        error: function(xhr) {
+                            batchStatus.append('<div class="alert alert-danger mt-3">Error uploading batch ' + (batchIndex + 1) + ': ' + xhr.statusText + '</div>');
+                        }
+                    });
+                }
+                uploadBatch(0);
+            });
         });
     </script>
 </body>

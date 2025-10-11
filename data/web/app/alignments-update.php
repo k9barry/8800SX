@@ -2,86 +2,61 @@
 require_once('config.php');
 require_once('helpers.php');
 require_once('config-tables-columns.php');
-
-// Processing form data when form is submitted
-if(isset($_POST["id"]) && !empty($_POST["id"])){
-    // Get hidden input value
+session_start();
+/**
+ * Handles updating alignment records securely.
+ * @author Viavi 8800SX
+ */
+if (isset($_POST["id"]) && !empty($_POST["id"])) {
+    // CSRF token check
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die(translate('Invalid CSRF token.'));
+    // ...existing code...
     $id = $_POST["id"];
-
-    // Checking for upload fields
     $upload_results = array();
     $upload_errors = array();
-
-    // Use the backup fields to look for submitted files, if any
     foreach ($_POST as $key => $value) {
-
-        // Check for $_POST cruddiy_backup_xxx to determine $_FILES xxx
-        // We don't loop through $_FILES directly to handle value backup more easily
         if (substr($key, 0, 15) === 'cruddiy_backup_') {
             $originalKey = substr($key, 15);
-            // Check if a file was uploaded for this field
             if (isset($_FILES[$originalKey]) && $_FILES[$originalKey]['error'] == UPLOAD_ERR_OK) {
-                // Handle the file upload
                 $this_upload = handleFileUpload($_FILES[$originalKey]);
                 $upload_results[] = $this_upload;
-
-                // If the upload was successful, update $_POST
                 if (!in_array(true, array_column($this_upload, 'error')) && !array_key_exists('error', $this_upload)) {
                     $_POST[$originalKey] = $this_upload['success'];
-
-                    // And we can safely delete the previous file
                     unlink($upload_target_dir . $_POST['cruddiy_backup_' . $originalKey]);
                 }
             } else {
-                // No file uploaded, use the backup
                 $_POST[$originalKey] = $value;
             }
         }
-
-
-        // Check for cruddiy_delete_xxx and set corresponding $_POST['xxx'] to blank
         if (substr($key, 0, 15) === 'cruddiy_delete_') {
             $deleteKey = substr($key, 15);
-
             if (isset($_POST['cruddiy_delete_' . $deleteKey]) && $_POST['cruddiy_delete_' . $deleteKey]) {
-                // Set the corresponding field to blank
                 $_POST[$deleteKey] = '';
-
-                // And we can safely delete the file
                 @unlink($upload_target_dir . $_POST['cruddiy_backup_' . $deleteKey]);
             }
         }
     }
-
     $upload_errors = array();
     foreach ($upload_results as $result) {
         if (isset($result['error'])) {
             $upload_errors[] = $result['error'];
         }
     }
-
-    // Check for regular fields
     if (!in_array(true, array_column($upload_results, 'error'))) {
-
-        $datetime = trim($_POST["datetime"]);
-		$model = trim($_POST["model"]);
-		$serial = trim($_POST["serial"]);
-		$file = trim($_POST["file"]);
-		$entered = trim($_POST["entered"]);
-		$filename = trim($_POST["filename"]);
-		
-
-        // Prepare an update statement
-
+        $datetime = trim(filter_var($_POST["datetime"], FILTER_SANITIZE_STRING));
+        $model = trim(filter_var($_POST["model"], FILTER_SANITIZE_STRING));
+        $serial = trim(filter_var($_POST["serial"], FILTER_SANITIZE_STRING));
+        $file = trim(filter_var($_POST["file"], FILTER_SANITIZE_STRING));
+        $entered = trim(filter_var($_POST["entered"], FILTER_SANITIZE_STRING));
+        $filename = trim(filter_var($_POST["filename"], FILTER_SANITIZE_STRING));
         $stmt = $link->prepare("UPDATE `alignments` SET `datetime`=?,`model`=?,`serial`=?,`file`=?,`entered`=?,`filename`=? WHERE `id`=?");
-
         try {
-            $stmt->execute([ $datetime, $model, $serial, $file, $entered, $filename, $id  ]);
+            $stmt->execute([ $datetime, $model, $serial, $file, $entered, $filename, $id ]);
         } catch (Exception $e) {
             error_log($e->getMessage());
-            $error = $e->getMessage();
         }
-
+    }
         if (!isset($error)){
             header("location: alignments-read.php?id=$id");
         } else {

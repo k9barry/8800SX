@@ -1,63 +1,54 @@
 <?php
 require_once('config.php');
 require_once('helpers.php');
-
-// Processing form data when form is submitted
-if($_SERVER["REQUEST_METHOD"] == "POST"){
-
-    // Checking for upload fields
+session_start();
+/**
+ * Handles creation of new alignment records securely.
+ * @author Viavi 8800SX
+ */
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // CSRF token check
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die(translate('Invalid CSRF token.'));
+    }
     $upload_results = array();
     if (!empty($_FILES)) {
         foreach ($_FILES as $key => $value) {
-            // Check if the file was actually uploaded
             if ($value['error'] != UPLOAD_ERR_NO_FILE) {
-                // echo "Field " . $key . " is a file upload.\n";
                 $this_upload = handleFileUpload($_FILES[$key]);
                 $upload_results[] = $this_upload;
-                // Put the filename in the POST data to save it in DB
                 if (!in_array(true, array_column($this_upload, 'error')) && !array_key_exists('error', $this_upload)) {
                     $_POST[$key] = $this_upload['success'];
                 }
             }
         }
     }
-
     $upload_errors = array();
     foreach ($upload_results as $result) {
         if (isset($result['error'])) {
             $upload_errors[] = $result['error'];
         }
     }
-
-    // Check for regular fields
     if (!in_array(true, array_column($upload_results, 'error'))) {
-
-        $datetime = trim($_POST["datetime"]);
-		$model = trim($_POST["model"]);
-		$serial = trim($_POST["serial"]);
-		$file = trim($_POST["file"]);
-		$entered = trim($_POST["entered"]);
-		$filename = trim($_POST["filename"]);
-		
-
-
+        $datetime = trim(filter_var($_POST["datetime"], FILTER_SANITIZE_STRING));
+        $model = trim(filter_var($_POST["model"], FILTER_SANITIZE_STRING));
+        $serial = trim(filter_var($_POST["serial"], FILTER_SANITIZE_STRING));
+        $file = trim(filter_var($_POST["file"], FILTER_SANITIZE_STRING));
+        $entered = trim(filter_var($_POST["entered"], FILTER_SANITIZE_STRING));
+        $filename = trim(filter_var($_POST["filename"], FILTER_SANITIZE_STRING));
         $stmt = $link->prepare("INSERT INTO `alignments` (`datetime`, `model`, `serial`, `file`, `entered`, `filename`) VALUES (?, ?, ?, ?, ?, ?)");
-
         try {
             $stmt->execute([ $datetime, $model, $serial, $file, $entered, $filename ]);
         } catch (Exception $e) {
             error_log($e->getMessage());
             $error = $e->getMessage();
         }
-
-        if (!isset($error)){
+        if (!isset($error)) {
             $new_id = mysqli_insert_id($link);
             header("location: alignments-read.php?id=$new_id");
         } else {
-            $uploaded_files = array();
             foreach ($upload_results as $result) {
                 if (isset($result['success'])) {
-                    // Delete the uploaded files if there were any error while saving postdata in DB
                     unlink($upload_target_dir . $result['success']);
                 }
             }

@@ -30,14 +30,23 @@ $stmt->fetch();
 $stmt->close();
 $link->close();
 require_once(__DIR__ . '/tcpdf/tcpdf.php');
-$pdf = new TCPDF();
+
+$pdf = new TCPDF('P', 'mm', 'A4'); // Landscape, millimeters, A4
 $pdf->SetCreator(PDF_CREATOR);
 $pdf->SetAuthor('Viavi 8800SX');
 $pdf->SetTitle($filename);
 $pdf->SetSubject('Alignment File');
-$pdf->SetMargins(15, 15, 15);
+$pdf->SetMargins(10, 10, 10);
+$pdf->SetAutoPageBreak(TRUE, 10);
 $pdf->AddPage();
-$pdf->SetFont('courier', '', 10);
-$pdf->Write(0, $file_contents);
+$pdf->SetFont('courier', '', 8); // Smaller font for more columns
+
+// Split file contents into lines
+$lines = explode("\n", $file_contents);
+foreach ($lines as $line) {
+    // Output each line in a cell with no wrapping
+    $pdf->Cell(0, 5, $line, 0, 1, 'L', 0, '', 0, false, 'T', 'C');
+}
+
 $pdf->Output($filename . '.pdf', 'I');
 exit;

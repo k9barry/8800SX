@@ -1,4 +1,5 @@
 <?php
+
 /**
  * The main.php file does the uploading of the files.
  * 
@@ -33,87 +34,87 @@ $count = 0;  //Get count of successfully uploaded records
 $msg = "";
 $dirname = "uploads";
 array_map('unlink', glob("$dirname/*")); // Remove all files from upload folder
-include('../connection.php');
+include('config.php');
 
-// Set INSERT statement and prepare
-$sql = "INSERT INTO alignments (datetime, model, serial, file, filename) VALUES (?, ?, ?, ?, ?)";
-$statement = $connection->prepare($sql);
+    // Set INSERT statement and prepare
+    $sql = "INSERT INTO alignments (datetime, model, serial, file, filename) VALUES (?, ?, ?, ?, ?)";
+    $statement = $connection->prepare($sql);
 
-// Get all filenames from DB and place in array $db
-$sqlFind = 'SELECT `filename` FROM `alignments`';
-$result = mysqli_query($connection, $sqlFind);
+    // Get all filenames from DB and place in array $db
+    $sqlFind = 'SELECT `filename` FROM `alignments`';
+    $result = mysqli_query($connection, $sqlFind);
 $db = []; // create empty array
-while ($row = mysqli_fetch_row($result)) {
+    while ($row = mysqli_fetch_row($result)) {
   array_push($db, $row[0]);
-}
+    }
 
-if (isset($_REQUEST['file-upload'])) {
+    if (isset($_REQUEST['file-upload'])) {
 
   // Loop thru upladed files and get info to put into DB
-  for ($i = 0; $i < count($_FILES['multiple_files']['name']); $i++) {
-    $filename[] = basename($_FILES['multiple_files']['name'][$i]);
+        for ($i = 0; $i < count($_FILES['multiple_files']['name']); $i++) {
+            $filename[] = basename($_FILES['multiple_files']['name'][$i]);
 
     //Skip all files not ending in .txt
-    $path_part = pathinfo($filename[$i]);
-    $path_ext = strtolower($path_part['extension']);
+            $path_part = pathinfo($filename[$i]);
+            $path_ext = strtolower($path_part['extension']);
     if ($path_ext <> "txt") {
       $msg .= "File " . htmlspecialchars($filename[$i]) . " does not end in '.txt' unable to upload<br>";
     } else {
       // Validate MIME type for additional security
-      $tempname = $_FILES['multiple_files']['tmp_name'][$i];
-      $finfo = finfo_open(FILEINFO_MIME_TYPE);
-      $mime_type = finfo_file($finfo, $tempname);
-      finfo_close($finfo);
+            $tempname = $_FILES['multiple_files']['tmp_name'][$i];
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mime_type = finfo_file($finfo, $tempname);
+            finfo_close($finfo);
       
-      if ($mime_type !== 'text/plain') {
+            if ($mime_type !== 'text/plain') {
         $msg .= "File " . htmlspecialchars($filename[$i]) . " has invalid MIME type. Only text files allowed.<br>";
-        continue;
-      }
+                continue;
+            }
 
       // Save the remaining files to the upload folder
-      $targetpath = $dirname . "/" . $filename[$i];
+            $targetpath = $dirname . "/" . $filename[$i];
       move_uploaded_file($tempname, $targetpath);
 
       // Check if uploaded filename is not in array of DB names
-      if (!in_array($filename[$i], $db)) {
+            if (!in_array($filename[$i], $db)) {
 
         // Fix the datetime from the filename to insert into DB
-        $filevalue = explode('-', $filename[$i]);
-        $check_filename = substr($filevalue[2], 0, 2);
+                $filevalue = explode('-', $filename[$i]);
+                $check_filename = substr($filevalue[2], 0, 2);
         if ($check_filename <> "20") {
-          $month = substr($filevalue[2], 0, 2);
-          $day = substr($filevalue[2], 2, 2);
-          $year = substr($filevalue[2], 4, 4);
-        } else {
-          $month = substr($filevalue[2], 4, 2);
-          $day = substr($filevalue[2], 6, 2);
-          $year = substr($filevalue[2], 0, 4);
-        }
-        $hour = substr($filevalue[3], 0, 2);
-        $minute = substr($filevalue[3], 2, 2);
-        $second = substr($filevalue[3], 4, 2);
+                    $month = substr($filevalue[2], 0, 2);
+                    $day = substr($filevalue[2], 2, 2);
+                    $year = substr($filevalue[2], 4, 4);
+                } else {
+                    $month = substr($filevalue[2], 4, 2);
+                    $day = substr($filevalue[2], 6, 2);
+                    $year = substr($filevalue[2], 0, 4);
+                }
+                $hour = substr($filevalue[3], 0, 2);
+                $minute = substr($filevalue[3], 2, 2);
+                $second = substr($filevalue[3], 4, 2);
 
         // Set Strings to insert into DB
         $datetime = "" . $year . "-" . $month . "-" . $day . " " . $hour . ":" . $minute . ":" . $second . "";
-        $model = $filevalue[0];
-        $serial = $filevalue[1];
+                $model = $filevalue[0];
+                $serial = $filevalue[1];
         $file_contents = file_get_contents($targetpath); // Read the file contents to String String once it been uploaded for insert into DB
 
         // Bind the statement and execute
-        $statement->bind_param("sssss", $datetime, $model, $serial, $file_contents, $filename[$i]);
+                $statement->bind_param("sssss", $datetime, $model, $serial, $file_contents, $filename[$i]);
         $statement->execute();  // Execute the mysql statement
 
         if ($statement) {
-          $count++;
+                    $count++;
           $msg .= "<font color='green'>File " . htmlspecialchars($filename[$i]) . " uploaded successfuly</font><br>";
-        } else {
+                } else {
           $msg .= " File " . htmlspecialchars($filename[$i]) . " Error!<br>";
-        }
-      } else {
+                }
+            } else {
         $msg .= "File " . htmlspecialchars($filename[$i]) . " already exists in DB unable to upload<br>";
-      }
+            }
+        }
     }
-  }
 }
 if ($count > 0) {
   $msg .= "<br><font color='green'>!!!!! " . $count . " files uploaded successfuly to the DB !!!!!</font><br>";
