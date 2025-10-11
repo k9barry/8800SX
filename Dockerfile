@@ -5,7 +5,10 @@ RUN cp /usr/local/etc/php/php.ini-development /usr/local/etc/php/php.ini && \
     sed -i 's/max_file_uploads = 20/max_file_uploads = 1000/g' /usr/local/etc/php/php.ini && \
     sed -i 's/post_max_size = 8M/post_max_size = 128M/g' /usr/local/etc/php/php.ini && \
     docker-php-ext-install mysqli && \
-    apt-get update && apt-get install -y --no-install-recommends unzip curl ca-certificates && \
+    apt-get update && apt-get install -y --no-install-recommends \
+        unzip=6.0-28 \
+        curl=7.88.1-10+deb12u14 \
+        ca-certificates=20230311+deb12u1 && \
     rm -rf /var/lib/apt/lists/* && \
     update-ca-certificates
 WORKDIR /var/www/html/app
