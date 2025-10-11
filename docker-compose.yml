@@ -10,7 +10,7 @@ services:
       - 8080:80
     volumes:
       - ./data/web:/var/www/html
-      - ./data/web/uploads:/var/www/html/uploads
+      - ./data/web/app/uploads:/var/www/html/app/uploads
       - ./data/web/nginx.conf:/etc/nginx/conf.d/default.conf
     # Only use this block with Traefik set up
     #labels:
@@ -43,7 +43,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./data/web:/var/www/html
-      - ./data/web/uploads:/var/www/html/uploads
+      - ./data/web/app/uploads:/var/www/html/app/uploads
     environment:
       DB_PASSWORD_FILE: /run/secrets/db_password
     secrets:
