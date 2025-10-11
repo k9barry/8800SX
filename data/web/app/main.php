@@ -44,7 +44,7 @@ $dirname = "uploads";
 
 // Create uploads directory if it doesn't exist
 if (!file_exists($dirname)) {
-    mkdir($dirname, 0777, true);
+    mkdir($dirname, 0766, true);
     error_log("[DEBUG] Created uploads directory: " . $dirname);
     // Write a dummy index file to prevent directory listing
     file_put_contents($dirname . '/index.php', '');
