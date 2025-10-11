@@ -46,7 +46,7 @@ jobs:
         id: current_version
         run: |
           if [ -f version.txt ]; then
-            CURRENT_VERSION=$(cat version.txt | tr -d '{}' | xargs)
+            CURRENT_VERSION=$(cat version.txt | xargs)
           else
             CURRENT_VERSION="0.0.0"
           fi
