@@ -51,7 +51,7 @@ if (!file_exists($dirname)) {
 }
 
 array_map('unlink', glob("$dirname/*")); // Remove all files from upload folder
-require_once('Config.php');
+require_once('config.php');
 
     // Get configuration instance
     $config = Config::getInstance();

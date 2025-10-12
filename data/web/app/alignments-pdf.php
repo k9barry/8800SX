@@ -1,6 +1,6 @@
 <?php
 require_once('security-headers.php');
-require_once('Config.php');
+require_once('config.php');
 require_once('helpers.php');
 /**
  * Securely generates a PDF of the text file for printing.
