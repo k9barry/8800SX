@@ -1,11 +1,16 @@
 <?php
-require_once('config.php');
+require_once('Config.php');
 require_once('helpers.php');
 session_start();
 /**
  * Handles creation of new alignment records securely.
  * @author Viavi 8800SX
  */
+
+// Get configuration instance
+$config = Config::getInstance();
+$link = $config->getDb();
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // CSRF token check
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
@@ -49,7 +54,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } else {
             foreach ($upload_results as $result) {
                 if (isset($result['success'])) {
-                    unlink($upload_target_dir . $result['success']);
+                    unlink($config->getUploadTargetDir() . $result['success']);
                 }
             }
         }

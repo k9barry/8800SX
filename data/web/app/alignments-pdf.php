@@ -1,20 +1,20 @@
 <?php
 require_once('security-headers.php');
-require_once('config.php');
+require_once('Config.php');
 require_once('helpers.php');
 /**
  * Securely generates a PDF of the text file for printing.
  * @author Viavi 8800SX
  */
+
+// Get configuration instance
+$config = Config::getInstance();
+$link = $config->getDb();
+
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     die(translate('Invalid record ID.'));
 }
 $id = intval($_GET['id']);
-$link = mysqli_connect($db_server, $db_user, $db_password, $db_name);
-if ($link === false) {
-    error_log(mysqli_connect_error());
-    die("ERROR: Could not connect. " . mysqli_connect_error());
-}
 $sql = "SELECT filename, file FROM alignments WHERE id = ?";
 $stmt = $link->prepare($sql);
 $stmt->bind_param("i", $id);

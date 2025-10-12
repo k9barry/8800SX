@@ -18,9 +18,16 @@
     </style>
 </head>
 <?php require_once('security-headers.php'); ?>
-<?php require_once('config.php'); ?>
-<?php require_once('helpers.php'); ?>
-<?php require_once('config-tables-columns.php'); ?>
+<?php 
+require_once('Config.php');
+require_once('helpers.php');
+require_once('config-tables-columns.php');
+
+// Get configuration instance
+$config = Config::getInstance();
+$link = $config->getDb();
+$no_of_records_per_page = $config->getNoOfRecordsPerPage();
+?>
 <?php require_once('navbar.php'); ?>
 <body>
     <section class="pt-5">

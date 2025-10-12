@@ -16,7 +16,7 @@
         }
     </style>
 </head>
-<?php require_once('config.php'); ?>
+<?php require_once('Config.php'); ?>
 <?php require_once('helpers.php'); ?>
 <?php require_once('navbar.php'); ?>
 </html>

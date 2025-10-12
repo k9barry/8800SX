@@ -51,7 +51,11 @@ if (!file_exists($dirname)) {
 }
 
 array_map('unlink', glob("$dirname/*")); // Remove all files from upload folder
-require_once('config.php');
+require_once('Config.php');
+
+    // Get configuration instance
+    $config = Config::getInstance();
+    $link = $config->getDb();
 
     // Set INSERT statement and prepare
     $sql = "INSERT INTO alignments (datetime, model, serial, file, filename) VALUES (?, ?, ?, ?, ?)";
