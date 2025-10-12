@@ -17,8 +17,8 @@ METHOD:
 ================================================================================
 
 Total Functions Analyzed: 13
-Used Functions: 5 (38%)
-Unused Functions: 8 (62%)
+Used Functions: 6 (including 2 internal helpers)
+Unused Functions: 7
 
 CRITICAL FUNCTIONS (USED HEAVILY):
 - translate() ..................... 70+ usages across 10+ files
@@ -37,7 +37,7 @@ UNUSED FUNCTIONS (CANDIDATES FOR REMOVAL):
 - getUploadResultByErrorCode() .... 0 usages (14 lines)
 - truncate() ...................... 0 usages (15 lines)
 
-Total unused code: ~134 lines (48% of helpers.php)
+Total unused code: ~120 lines (43% of helpers.php)
 
 ================================================================================
                            DETAILED FINDINGS
