@@ -25,7 +25,8 @@ function convert_datetime($date_str)
 
 function translate($key, $echo = true, ...$args)
 {
-    global $translations;
+    $config = Config::getInstance();
+    $translations = $config->getTranslations();
 
     // Check if the key exists in the array
     if (isset($translations[$key])) {
@@ -49,9 +50,10 @@ function translate($key, $echo = true, ...$args)
 
 function handleFileUpload($FILE) {
 
-    global $upload_max_size;
-    global $upload_target_dir;
-    global $upload_disallowed_exts;
+    $config = Config::getInstance();
+    $upload_max_size = $config->getUploadMaxSize();
+    $upload_target_dir = $config->getUploadTargetDir();
+    $upload_disallowed_exts = $config->getUploadDisallowedExts();
 
     $upload_results     = array();
     
