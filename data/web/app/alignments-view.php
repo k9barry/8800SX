@@ -8,16 +8,16 @@ require_once('navbar.php');
  * Securely views the text file of a record.
  * @author Viavi 8800SX
  */
+
+// Get configuration instance
+$config = Config::getInstance();
+$link = $config->getDb();
+
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     echo "<div class='alert alert-danger'>" . translate('Invalid record ID.') . "</div>";
     exit;
 }
 $id = intval($_GET['id']);
-$link = mysqli_connect($db_server, $db_user, $db_password, $db_name);
-if ($link === false) {
-    error_log(mysqli_connect_error());
-    die("ERROR: Could not connect. " . mysqli_connect_error());
-}
 $sql = "SELECT filename, file FROM alignments WHERE id = ?";
 $stmt = $link->prepare($sql);
 $stmt->bind_param("i", $id);

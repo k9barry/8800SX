@@ -7,6 +7,11 @@ session_start();
  * Handles updating alignment records securely.
  * @author Viavi 8800SX
  */
+
+// Get configuration instance
+$config = Config::getInstance();
+$link = $config->getDb();
+
 if (isset($_POST["id"]) && !empty($_POST["id"])) {
     // CSRF token check
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
@@ -23,7 +28,7 @@ if (isset($_POST["id"]) && !empty($_POST["id"])) {
                 $upload_results[] = $this_upload;
                 if (!in_array(true, array_column($this_upload, 'error')) && !array_key_exists('error', $this_upload)) {
                     $_POST[$originalKey] = $this_upload['success'];
-                    unlink($upload_target_dir . $_POST['cruddiy_backup_' . $originalKey]);
+                    unlink($config->getUploadTargetDir() . $_POST['cruddiy_backup_' . $originalKey]);
                 }
             } else {
                 $_POST[$originalKey] = $value;
@@ -33,7 +38,7 @@ if (isset($_POST["id"]) && !empty($_POST["id"])) {
             $deleteKey = substr($key, 15);
             if (isset($_POST['cruddiy_delete_' . $deleteKey]) && $_POST['cruddiy_delete_' . $deleteKey]) {
                 $_POST[$deleteKey] = '';
-                @unlink($upload_target_dir . $_POST['cruddiy_backup_' . $deleteKey]);
+                @unlink($config->getUploadTargetDir() . $_POST['cruddiy_backup_' . $deleteKey]);
             }
         }
     }
@@ -64,7 +69,7 @@ if (isset($_POST["id"]) && !empty($_POST["id"])) {
             foreach ($upload_results as $result) {
                 if (isset($result['success'])) {
                     // Delete the uploaded files if there were any error while saving postdata in DB
-                    unlink($upload_target_dir . $result['success']);
+                    unlink($config->getUploadTargetDir() . $result['success']);
                 }
             }
         }

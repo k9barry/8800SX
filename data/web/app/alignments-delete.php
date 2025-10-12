@@ -7,6 +7,11 @@ session_start();
  * Handles deletion of alignment records securely.
  * @author Viavi 8800SX
  */
+
+// Get configuration instance
+$config = Config::getInstance();
+$link = $config->getDb();
+
 if (isset($_POST["id"]) && !empty($_POST["id"])) {
     // CSRF token check
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
@@ -34,7 +39,7 @@ if (isset($_POST["id"]) && !empty($_POST["id"])) {
                     $result = mysqli_stmt_get_result($stmt);
                     if (mysqli_num_rows($result) == 1) {
                         $row = mysqli_fetch_array($result, MYSQLI_ASSOC);
-                        $fileToDelete = "$upload_target_dir" . $row[$columnName];
+                        $fileToDelete = $config->getUploadTargetDir() . $row[$columnName];
                         if (file_exists($fileToDelete)) {
                             unlink($fileToDelete);
                         }

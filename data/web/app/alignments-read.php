@@ -6,6 +6,11 @@ require_once('config-tables-columns.php');
  * Securely reads and displays a single alignment record.
  * @author Viavi 8800SX
  */
+
+// Get configuration instance
+$config = Config::getInstance();
+$link = $config->getDb();
+
 $_GET["id"] = trim($_GET["id"]);
 if (isset($_GET["id"]) && !empty($_GET["id"])) {
 	$sql = "SELECT `alignments`.* FROM `alignments` WHERE `alignments`.`id` = ? GROUP BY `alignments`.`id`;";
