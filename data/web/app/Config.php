@@ -72,7 +72,7 @@ class Config {
         $this->language = 'en';
         $this->noOfRecordsPerPage = '10';
         $this->protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https' : 'http';
-        $this->domain = $this->protocol . '://' . $_SERVER['HTTP_HOST'];
+        $this->domain = $this->protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
         
         // Load translations
         $this->translations = include(__DIR__ . "/locales/{$this->language}.php");
