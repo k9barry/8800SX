@@ -1,6 +1,6 @@
 # helpers.php - Quick Reference Guide
 
-## ✅ USED Functions (Keep These)
+## ✅ USED Functions (Keep These) - 6 Total
 
 | Function | Usage Count | Files Using It |
 |----------|-------------|----------------|
@@ -11,7 +11,7 @@
 | `sanitize()` | Internal | Called by handleFileUpload() |
 | `generateUniqueFileName()` | Internal | Called by handleFileUpload() |
 
-## ❌ UNUSED Functions (Can Be Removed)
+## ❌ UNUSED Functions (Can Be Removed) - 7 Total
 
 | Function | Reason Not Used |
 |----------|-----------------|
@@ -66,7 +66,7 @@
 - `getUploadResultByErrorCode()` - 14 lines
 - `truncate()` - 15 lines
 
-**Total Lines Removable:** ~134 lines (48% of helpers.php)
+**Total Lines Removable:** ~120 lines (43% of helpers.php)
 
 ### Potential Future Use Cases
 - `truncate()` - Could be useful for displaying long filenames in tables
@@ -79,11 +79,11 @@
 - Pros: Functions available if needed in future
 - Cons: Code maintenance overhead, confusion about what's used
 
-**Aggressive Approach:** Remove all 7 unused functions
+**Aggressive Approach:** Remove all 7 unused functions (~120 lines)
 - Pros: Cleaner codebase, less to maintain
 - Cons: Need to re-implement if needed later
 
-**Balanced Approach:** Keep `truncate()` and `getUploadResultByErrorCode()`, remove others
+**Balanced Approach:** Keep `truncate()` and `getUploadResultByErrorCode()`, remove 5 others (~91 lines)
 - Pros: Keep potentially useful utilities, remove clearly unused code
 - Cons: Still some unused code remains
 

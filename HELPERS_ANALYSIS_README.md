@@ -7,9 +7,9 @@ This analysis examines all 13 functions in `data/web/app/helpers.php` to determi
 ## 📊 Quick Results
 
 - **Total Functions:** 13
-- **Used Functions:** 5 (38%)
-- **Unused Functions:** 8 (62%)
-- **Potential Code Reduction:** ~134 lines (48% of file)
+- **Used Functions:** 6 (including 2 internal helpers)
+- **Unused Functions:** 7
+- **Potential Code Reduction:** ~120 lines (43% of file)
 
 ## 📄 Documentation Files
 
@@ -45,7 +45,7 @@ Quick lookup guide with:
 
 ## 🎯 Key Findings
 
-### ✅ Functions You Should KEEP (5 + 2 internal)
+### ✅ Functions You Should KEEP (6 total)
 
 1. **`translate()`** - Used 70+ times across 10+ files - **CRITICAL**
 2. **`convert_datetime()`** - Used 4 times in 2 files
@@ -54,7 +54,7 @@ Quick lookup guide with:
 5. **`sanitize()`** - Internal use by handleFileUpload()
 6. **`generateUniqueFileName()`** - Internal use by handleFileUpload()
 
-### ❌ Functions You Can REMOVE (8)
+### ❌ Functions You Can SAFELY REMOVE (7)
 
 1. **`parse_columns()`** - 58 lines - Never used
 2. **`get_columns_attributes()`** - 18 lines - Never used
@@ -64,7 +64,7 @@ Quick lookup guide with:
 6. **`getUploadResultByErrorCode()`** - 14 lines - Not integrated
 7. **`truncate()`** - 15 lines - Not used for display
 
-**Note:** Consider keeping `truncate()` and `getUploadResultByErrorCode()` as they could be useful utilities.
+**Note:** While all 7 functions can be safely removed, consider keeping `truncate()` and `getUploadResultByErrorCode()` as they could provide value if integrated in the future.
 
 ## 💡 Recommendations
 
@@ -74,7 +74,7 @@ Quick lookup guide with:
 **Cons:** 134 lines of unused code
 
 ### Option 2: Balanced (Recommended)
-**Action:** Remove 5 functions, keep 2 utilities  
+**Action:** Remove 5 clearly dead functions, keep 2 potentially useful utilities  
 **Remove:**
 - parse_columns() (58 lines)
 - get_columns_attributes() (18 lines)
@@ -82,19 +82,19 @@ Quick lookup guide with:
 - convert_bool() (6 lines)
 - get_fk_url() (15 lines)
 
-**Keep as utilities:**
-- truncate() (useful for UI)
-- getUploadResultByErrorCode() (useful for better error messages)
+**Keep as potentially useful utilities:**
+- truncate() (could improve UI display of long text)
+- getUploadResultByErrorCode() (could improve error messages)
 
 **Pros:** Balance between cleanup and utility  
 **Cons:** Some unused code remains  
-**Lines Removed:** ~105 lines (38% of file)
+**Lines Removed:** ~91 lines (33% of file)
 
 ### Option 3: Aggressive
-**Action:** Remove all 8 unused functions  
+**Action:** Remove all 7 unused functions  
 **Pros:** Cleanest codebase  
 **Cons:** Need to re-implement if needed later  
-**Lines Removed:** ~134 lines (48% of file)
+**Lines Removed:** ~120 lines (43% of file)
 
 ## 🔍 How to Use This Analysis
 
