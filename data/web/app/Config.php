@@ -61,7 +61,16 @@ class Config {
         $this->dbServer = 'db';
         $this->dbName = 'viavi';
         $this->dbUser = 'viavi';
-        $this->dbPassword = trim(file_get_contents(getenv("DB_PASSWORD_FILE")));
+        
+        // Validate DB_PASSWORD_FILE environment variable
+        $passwordFile = getenv("DB_PASSWORD_FILE");
+        if (!$passwordFile) {
+            throw new Exception("DB_PASSWORD_FILE environment variable is not set");
+        }
+        if (!file_exists($passwordFile)) {
+            throw new Exception("Password file not found: " . $passwordFile);
+        }
+        $this->dbPassword = trim(file_get_contents($passwordFile));
     }
     
     /**
@@ -70,12 +79,22 @@ class Config {
     private function initializeAppConfig() {
         $this->appName = '8800SX';
         $this->language = 'en';
-        $this->noOfRecordsPerPage = '10';
+        
+        // Validate language code to prevent path traversal
+        if (!preg_match('/^[a-z]{2}$/', $this->language)) {
+            throw new Exception("Invalid language code: " . $this->language);
+        }
+        
+        $this->noOfRecordsPerPage = 10; // Integer instead of string
         $this->protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https' : 'http';
         $this->domain = $this->protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
         
         // Load translations
-        $this->translations = include(__DIR__ . "/locales/{$this->language}.php");
+        $localeFile = __DIR__ . "/locales/{$this->language}.php";
+        if (!file_exists($localeFile)) {
+            throw new Exception("Translation file not found: " . $localeFile);
+        }
+        $this->translations = include($localeFile);
     }
     
     /**
@@ -121,8 +140,11 @@ class Config {
         if ($result = mysqli_query($this->dbConnection, $query)) {
             while ($row = mysqli_fetch_row($result)) {
                 if (!$this->dbConnection->set_charset($row[1])) {
-                    printf("Error loading character set %s: %s\n", $row[1], $this->dbConnection->error);
-                    exit();
+                    throw new Exception(
+                        "Error loading character set " . 
+                        htmlspecialchars($row[1]) . ": " . 
+                        htmlspecialchars($this->dbConnection->error)
+                    );
                 }
             }
         }
