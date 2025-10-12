@@ -171,28 +171,29 @@ Action: No changes needed
 OPTION 2: BALANCED (Remove clearly unused, keep utilities)
 Pros: Cleaner code while preserving potential utilities
 Cons: Still some unused code remains
-Action: Remove 5 functions, keep 2 utilities
+Action: Remove 5 functions, keep 2 potentially useful utilities
   Remove:
     - parse_columns() (58 lines)
     - get_columns_attributes() (18 lines)
     - convert_date() (8 lines)
     - convert_bool() (6 lines)
     - get_fk_url() (15 lines)
-  Keep for future use:
+  Keep as potentially useful utilities:
     - truncate() (could improve UI display)
     - getUploadResultByErrorCode() (could improve error messages)
+  Lines Removed: ~91 lines (33% of file)
 
 OPTION 3: AGGRESSIVE (Remove all unused)
 Pros: Cleanest codebase, easy to maintain
 Cons: Need to re-implement if needed later
-Action: Remove all 8 unused functions (134 lines)
+Action: Remove all 7 unused functions (~120 lines, 43% of file)
 
 ================================================================================
                             IMPACT ASSESSMENT
 ================================================================================
 
 Removing unused functions will:
-✓ Reduce file size by 48% (134 lines)
+✓ Reduce file size by up to 43% (~120 lines if all 7 removed)
 ✓ Improve code maintainability
 ✓ Eliminate confusion about what's used
 ✓ Reduce testing surface area
@@ -250,16 +251,16 @@ Exclusions: helpers.php itself (to avoid counting definitions)
 ================================================================================
 
 Out of 13 functions in helpers.php:
-- 5 are actively used and critical to application functionality
-- 8 are unused and can be safely removed to reduce code complexity
+- 6 are actively used (including 2 internal helpers) and critical to application functionality
+- 7 are unused and can be safely removed to reduce code complexity
 
 The unused functions appear to be remnants of a more generic CRUD framework
 that was partially implemented but not fully utilized in the final application.
 
 Recommended Action: Implement OPTION 2 (Balanced approach)
 - Remove 5 clearly unused functions (parse_columns, get_columns_attributes,
-  convert_date, convert_bool, get_fk_url)
-- Keep truncate() and getUploadResultByErrorCode() as they could be useful
+  convert_date, convert_bool, get_fk_url) - saves ~91 lines
+- Keep truncate() and getUploadResultByErrorCode() as potentially useful utilities
 - Document the decision for future maintainers
 
 ================================================================================

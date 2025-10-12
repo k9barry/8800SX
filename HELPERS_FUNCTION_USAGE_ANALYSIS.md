@@ -5,14 +5,14 @@ This document provides a comprehensive analysis of all functions defined in `dat
 ## Summary
 
 - **Total Functions Analyzed:** 13
-- **Functions in Use:** 5
-- **Functions NOT in Use:** 8
+- **Functions in Use:** 6 (including 2 internal helper functions)
+- **Functions NOT in Use:** 7
 
 ---
 
 ## Functions and Their Usage Status
 
-### ✅ USED Functions (5)
+### ✅ USED Functions (6 total)
 
 #### 1. `translate($key, $echo = true, ...$args)`
 **Status:** ✅ **USED** (heavily used throughout the application)
@@ -109,7 +109,7 @@ $this_upload = handleFileUpload($_FILES[$originalKey]);
 
 ---
 
-## ❌ UNUSED Functions (8)
+## ❌ UNUSED Functions (7)
 
 ### 1. `parse_columns($table_name, $postdata)`
 **Status:** ❌ **NOT USED**
@@ -231,7 +231,7 @@ These functions are actively used and should be retained:
 ## Conclusion
 
 Out of 13 functions in `helpers.php`:
-- **5 functions are actively used** and critical to the application
-- **8 functions are unused** and could potentially be removed to reduce code maintenance burden
+- **6 functions are actively used** (including 2 internal helpers) and critical to the application
+- **7 functions are unused** and could potentially be removed to reduce code maintenance burden
 
 The unused functions appear to be remnants of a more complex or generic CRUD system that may have been planned but not fully implemented. Removing them would simplify the codebase without affecting functionality.
