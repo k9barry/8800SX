@@ -1,83 +1,5 @@
 <?php
-// retrieves and enhances postdata table keys and values on CREATE and UPDATE events
-function parse_columns($table_name, $postdata)
-{
-    global $link;
-    $vars = array();
-
-    // prepare a default return value
-    $default = null;
-
-    // get all columns, including the ones not sent by the CRUD form
-    $sql = "SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT, EXTRA
-            FROM INFORMATION_SCHEMA.COLUMNS
-            WHERE table_name = '" . $table_name . "'";
-    $result = mysqli_query($link, $sql);
-    while ($row = mysqli_fetch_assoc($result)) {
-
-        $debug = 0;
-        if ($debug) {
-            echo "<pre>";
-            // print_r($postdata);
-            echo $row['COLUMN_NAME'] . "\t";
-            echo $row['DATA_TYPE'] . "\t";
-            echo $row['IS_NULLABLE'] . "\t";
-            echo $row['COLUMN_DEFAULT'] . "\t";
-            echo $row['EXTRA'] . "\t";
-            echo $default . "\n";
-            echo "</pre>";
-        }
-
-        switch ($row['DATA_TYPE']) {
-
-            // fix "Incorrect decimal value: '' error in STRICT_MODE or STRICT_TRANS_TABLE
-            // @see https://dev.mysql.com/doc/refman/5.7/en/sql-mode.html
-            case 'decimal':
-                $default = 0;
-                break;
-
-            // fix "Incorrect datetime value: '0' " on non-null datetime columns
-            // with 'CURRENT_TIMESTAMP' default not being set automatically
-            // and refusing to take NULL value
-            case 'datetime':
-                if ($row['COLUMN_DEFAULT'] != 'CURRENT_TIMESTAMP' && $row['IS_NULLABLE'] == 'YES') {
-                    $default = null;
-                } else {
-                    $default = date('Y-m-d H:i:s');
-                }
-                if ($postdata[$row['COLUMN_NAME']] == 'CURRENT_TIMESTAMP') {
-                    $_POST[$row['COLUMN_NAME']] = date('Y-m-d H:i:s');
-                }
-                break;
-        }
-
-        // check that fieldname was set before sending values to pdo
-        $vars[$row['COLUMN_NAME']] = isset($_POST[$row['COLUMN_NAME']]) && $_POST[$row['COLUMN_NAME']] ? trim($_POST[$row['COLUMN_NAME']]) : $default;
-    }
-    return $vars;
-}
-
-
-
-// get extra attributes for  table keys on CREATE and UPDATE events
-function get_columns_attributes($table_name, $column)
-{
-    global $link;
-    $sql = "SELECT COLUMN_DEFAULT, COLUMN_COMMENT
-            FROM INFORMATION_SCHEMA.COLUMNS
-            WHERE table_name = '" . $table_name . "'
-            AND column_name = '" . $column . "'";
-    $result = mysqli_query($link, $sql);
-    while ($row = mysqli_fetch_assoc($result)) {
-        $debug = 0;
-        if ($debug) {
-            echo "<pre>";
-            print_r($row);
-            echo "</pre>";
-        }
-        return $row;
-    }
-}
+// Helper functions for the Viavi 8800SX application
 
 function print_error_if_exists($error)
 {
@@ -92,44 +14,12 @@ function print_error_if_exists($error)
     }
 }
 
-function convert_date($date_str)
-{
-    if (isset($date_str)) {
-        //$date = date('d-m-Y', strtotime($date_str));
-        $date = date('Y-m-d', strtotime($date_str));
-        return htmlspecialchars($date);
-    }
-}
-
 function convert_datetime($date_str)
 {
     if (isset($date_str)) {
         //$date = date('d-m-Y H:i:s', strtotime($date_str));
         $date = date('Y-m-d H:i:s', strtotime($date_str));
         return htmlspecialchars($date);
-    }
-}
-
-function convert_bool($var)
-{
-    if (isset($var)) {
-        return $var ? "True" : "False";
-    }
-}
-
-function get_fk_url($value, $fk_table, $fk_column, $representation, bool $pk=false, bool $index=false)
-// Gets a URL to the foreign key parents read page
-{
-    if (isset($value)) {
-        $value = htmlspecialchars($value);
-        if($pk)
-        {
-            return '<a href="' . $fk_table . '-read.php?' . $fk_column . '=' . $value . '">' . $representation . '</a>';
-        }
-        else
-        {
-            return '<a href="' . $fk_table . '-index.php?' . $fk_column . '=' . $value . '">' . $representation . '</a>';
-        }
     }
 }
 
@@ -164,6 +54,13 @@ function handleFileUpload($FILE) {
     global $upload_disallowed_exts;
 
     $upload_results     = array();
+    
+    // Check for PHP upload errors first
+    if (isset($FILE["error"]) && $FILE["error"] !== UPLOAD_ERR_OK) {
+        $upload_results['error'] = getUploadResultByErrorCode($FILE["error"]);
+        return $upload_results;
+    }
+    
     $sanitized_fileName = sanitize(basename($FILE["name"]));
     $unique_filename    = generateUniqueFileName($sanitized_fileName);
     $target_file        = $upload_target_dir . $unique_filename;
@@ -258,22 +155,4 @@ function getUploadResultByErrorCode($code) {
         8 => 'A PHP extension stopped the file upload.',
     );
     return $phpFileUploadErrors[$code];
-}
-
-
-
-function truncate($string, $length = 15) {
-    // Decode HTML entities to ensure they are not cut in the middle
-    $decodedString = html_entity_decode($string);
-
-    // Check if the string needs to be truncated
-    if (mb_strlen($decodedString) > $length) {
-        // Truncate the string and encode HTML entities
-        $truncated = htmlspecialchars(mb_substr($decodedString, 0, $length)) . '...';
-    } else {
-        // No need to truncate, just encode HTML entities
-        $truncated = htmlspecialchars($string);
-    }
-
-    return $truncated;
 }
