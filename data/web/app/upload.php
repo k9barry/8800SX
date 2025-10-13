@@ -132,7 +132,7 @@
                     processData: false,
                     contentType: false,
                     success: function(response) {
-                        batchStatus.append('<div class="alert alert-info mt-3">Batch ' + (batchIndex + 1) + ' uploaded.</div>');
+                        batchStatus.append('<div class="alert alert-info mt-3">' + response + '</div>');
                         uploadBatch(batchIndex + 1);
                     },
                     error: function(xhr) {
