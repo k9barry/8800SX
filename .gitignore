@@ -1,4 +1,5 @@
 /.env
+/assets/
 /data/db/data/
 /data/db/logs/
 /compose-dev.yaml
