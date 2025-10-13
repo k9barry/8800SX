@@ -32,7 +32,7 @@ The following variables are now exported with descriptions:
 - `$language` - Current language code (e.g., 'en', 'es', 'fr')
 - `$no_of_records_per_page` - Number of records per page in list views
 - `$protocol` - HTTP or HTTPS protocol for current request
-- `$domain` - Full domain URL including protocol (**FIXES THE WARNING**)
+- `$domain` - Full domain URL including protocol (fixes the warning)
 - `$translations` - Translation strings for current language
 
 #### File Upload Configuration
@@ -45,8 +45,8 @@ The following variables are now exported with descriptions:
 
 ```
 data/web/app/
-├── Config.php          ← NEW: Configuration class (237 lines)
-├── config.php          ← REFACTORED: Variable exports only (88 lines)
+├── Config.php          ← NEW: Configuration class
+├── config.php          ← REFACTORED: Variable exports only
 ├── helpers.php         ← Uses Config::getInstance()
 └── alignments-*.php    ← Use variables from config.php
 ```
@@ -85,13 +85,15 @@ $link = $config->getDb();
 - ✅ Variables are properly exported from config.php
 - ✅ Files that require config.php will have access to all variables
 
-## Files Modified
+## Files Changed
 
 1. **Config.php** - CREATED
    - Contains the Config singleton class
+   - 237 lines of well-structured code
    
-2. **config.php** - REFACTORED
+2. **config.php** - REFACTORED  
    - Now only exports variables with descriptions
+   - Reduced from 237 lines to 88 lines
    - Loads Config.php and exposes variables for backward compatibility
 
 ## Migration Path (Optional Future Work)
