@@ -139,4 +139,7 @@ require_once('config.php');
 if ($count > 0) {
   $msg .= "<br><font color='green'>!!!!! " . $count . " files uploaded successfuly to the DB !!!!!</font><br>";
 }
+
+// Output the message for AJAX response
+echo $msg;
 ?>
