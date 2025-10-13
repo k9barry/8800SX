@@ -93,11 +93,11 @@ jobs:
           PR_NUMBER="${{ github.event.pull_request.number }}"
           PR_TITLE=$(gh pr view $PR_NUMBER --json title --jq '.title')
           PR_BODY=$(gh pr view $PR_NUMBER --json body --jq '.body')
-          
+
           # Save PR details to files for multiline handling
           echo "$PR_TITLE" > /tmp/pr_title.txt
           echo "$PR_BODY" > /tmp/pr_body.txt
-          
+
           echo "PR Title: $PR_TITLE"
           echo "PR Body length: ${#PR_BODY}"
         env:
@@ -213,24 +213,40 @@ jobs:
           BUMP_TYPE="${{ steps.version_bump.outputs.bump_type }}"
           PR_TITLE=$(cat /tmp/pr_title.txt)
           PR_BODY=$(cat /tmp/pr_body.txt)
-          
-          # Create release body
-          RELEASE_BODY="## Version $NEW_VERSION
 
-**Version bump type**: $BUMP_TYPE
+          # Create release notes file
+          cat > /tmp/release_notes.md << 'RELEASE_EOF'
+          ## Version ${{ steps.new_version.outputs.version }}
 
-### $PR_TITLE
+          **Version bump type**: ${{ steps.version_bump.outputs.bump_type }}
 
-$PR_BODY
+          ### $(cat /tmp/pr_title.txt)
 
----
+          $(cat /tmp/pr_body.txt)
 
-See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for full version history."
+          ---
+
+          See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for full version history.
+          RELEASE_EOF
+
+          # Substitute variables
+          sed -i "s/\${{ steps.new_version.outputs.version }}/$NEW_VERSION/g" /tmp/release_notes.md
+          sed -i "s/\${{ steps.version_bump.outputs.bump_type }}/$BUMP_TYPE/g" /tmp/release_notes.md
+          sed -i "s/\$(cat \/tmp\/pr_title.txt)/$PR_TITLE/g" /tmp/release_notes.md
+
+          # Replace PR body placeholder
+          awk -v pr_body="$PR_BODY" '{
+            if ($0 ~ /\$\(cat \/tmp\/pr_body.txt\)/) {
+              print pr_body
+            } else {
+              print $0
+            }
+          }' /tmp/release_notes.md > /tmp/release_notes_final.md
 
           # Create the release
-          echo "$RELEASE_BODY" | gh release create "v$NEW_VERSION" \
+          gh release create "v$NEW_VERSION" \
             --title "Release v$NEW_VERSION" \
-            --notes-file - \
+            --notes-file /tmp/release_notes_final.md \
             --repo ${{ github.repository }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
