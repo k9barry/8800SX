@@ -215,38 +215,24 @@ jobs:
           PR_BODY=$(cat /tmp/pr_body.txt)
 
           # Create release notes file
-          cat > /tmp/release_notes.md << 'RELEASE_EOF'
-          ## Version ${{ steps.new_version.outputs.version }}
-
-          **Version bump type**: ${{ steps.version_bump.outputs.bump_type }}
-
-          ### $(cat /tmp/pr_title.txt)
-
-          $(cat /tmp/pr_body.txt)
-
-          ---
-
-          See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for full version history.
-          RELEASE_EOF
-
-          # Substitute variables
-          sed -i "s/\${{ steps.new_version.outputs.version }}/$NEW_VERSION/g" /tmp/release_notes.md
-          sed -i "s/\${{ steps.version_bump.outputs.bump_type }}/$BUMP_TYPE/g" /tmp/release_notes.md
-          sed -i "s/\$(cat \/tmp\/pr_title.txt)/$PR_TITLE/g" /tmp/release_notes.md
-
-          # Replace PR body placeholder
-          awk -v pr_body="$PR_BODY" '{
-            if ($0 ~ /\$\(cat \/tmp\/pr_body.txt\)/) {
-              print pr_body
-            } else {
-              print $0
-            }
-          }' /tmp/release_notes.md > /tmp/release_notes_final.md
+          {
+            echo "## Version ${NEW_VERSION}"
+            echo ""
+            echo "**Version bump type**: ${BUMP_TYPE}"
+            echo ""
+            echo "### ${PR_TITLE}"
+            echo ""
+            echo "${PR_BODY}"
+            echo ""
+            echo "---"
+            echo ""
+            echo "See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for full version history."
+          } > /tmp/release_notes.md
 
           # Create the release
           gh release create "v$NEW_VERSION" \
             --title "Release v$NEW_VERSION" \
-            --notes-file /tmp/release_notes_final.md \
+            --notes-file /tmp/release_notes.md \
             --repo ${{ github.repository }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
