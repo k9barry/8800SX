@@ -1,7 +1,13 @@
 # Viavi 8800SX Database Management System
 
-[![Docker Image CI](https://github.com/k9barry/8800SX/actions/workflows/docker-image.yml/badge.svg)](https://github.com/k9barry/8800SX/actions/workflows/docker-image.yml)
+[![Code Quality](https://github.com/k9barry/viavi/actions/workflows/code-quality.yml/badge.svg)](https://github.com/k9barry/viavi/actions/workflows/code-quality.yml)
 [![License](https://img.shields.io/github/license/k9barry/viavi)](LICENSE)
+[![Version](https://img.shields.io/badge/version-2.1.6-blue)](https://github.com/k9barry/viavi/releases)
+[![PHP Version](https://img.shields.io/badge/php-8.3.2-purple)](https://www.php.net/)
+[![Docker](https://img.shields.io/badge/docker-compose-blue)](https://docs.docker.com/compose/)
+[![MySQL](https://img.shields.io/badge/mysql-latest-orange)](https://www.mysql.com/)
+[![Issues](https://img.shields.io/github/issues/k9barry/viavi)](https://github.com/k9barry/viavi/issues)
+[![Stars](https://img.shields.io/github/stars/k9barry/viavi)](https://github.com/k9barry/viavi/stargazers)
 
 A Docker-based web application for managing and analyzing output files from Viavi 8800SX service monitors. This system automatically parses test data files, stores them in a MySQL database, and provides a user-friendly interface for searching and managing service records.
 
