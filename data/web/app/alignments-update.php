@@ -59,7 +59,7 @@ if (isset($_POST["id"]) && !empty($_POST["id"])) {
         try {
             $stmt->execute([ $datetime, $model, $serial, $file, $entered, $filename, $id ]);
         } catch (Exception $e) {
-            error_log($e->getMessage());
+            $error = $e->getMessage();
         }
     }
         if (!isset($error)){

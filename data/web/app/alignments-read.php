@@ -30,7 +30,6 @@ if (isset($_GET["id"]) && !empty($_GET["id"])) {
 				exit();
 			}
 		} else {
-			error_log($stmt->error);
 			echo translate('stmt_error') . "<br>" . $stmt->error;
 		}
 	}

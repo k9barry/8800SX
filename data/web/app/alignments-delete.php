@@ -48,7 +48,6 @@ if (isset($_POST["id"]) && !empty($_POST["id"])) {
                         exit();
                     }
                 } else {
-                    error_log($stmt->error);
                     echo translate('stmt_error') . "<br>" . $stmt->error;
                 }
             }
@@ -66,7 +65,6 @@ if (isset($_POST["id"]) && !empty($_POST["id"])) {
         try {
             mysqli_stmt_execute($stmt);
         } catch (Exception $e) {
-            error_log($e->getMessage());
             $error = $e->getMessage();
         }
 

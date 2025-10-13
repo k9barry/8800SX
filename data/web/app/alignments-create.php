@@ -45,7 +45,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         try {
             $stmt->execute([ $datetime, $model, $serial, $file, $entered, $filename ]);
         } catch (Exception $e) {
-            error_log($e->getMessage());
             $error = $e->getMessage();
         }
         if (!isset($error)) {

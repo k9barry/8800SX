@@ -1,11 +1,4 @@
 <?php
-error_log('[DEBUG] main.php started');
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-ini_set('log_errors', 1);
-ini_set('error_log', '/tmp/php-errors.log');
-
 
 /**
  * The main.php file does the uploading of the files.
@@ -45,7 +38,6 @@ $dirname = "uploads";
 // Create uploads directory if it doesn't exist
 if (!file_exists($dirname)) {
     mkdir($dirname, 0777, true);
-    error_log("[DEBUG] Created uploads directory: " . $dirname);
     // Write a dummy index file to prevent directory listing
     file_put_contents($dirname . '/index.php', '');
 }
@@ -64,9 +56,9 @@ require_once('config.php');
     // Get all filenames from DB and place in array $db
     $sqlFind = 'SELECT `filename` FROM `alignments`';
     $result = mysqli_query($link, $sqlFind);
-$db = []; // create empty array
+    $db = []; // create empty array
     while ($row = mysqli_fetch_row($result)) {
-  array_push($db, $row[0]);
+      array_push($db, $row[0]);
     }
 
     if (isset($_REQUEST['file-upload'])) {
@@ -74,15 +66,12 @@ $db = []; // create empty array
   // Loop thru upladed files and get info to put into DB
     for ($i = 0; $i < count($_FILES['multiple_files']['name']); $i++) {
       $filename[] = basename($_FILES['multiple_files']['name'][$i]);
-      error_log("[DEBUG] Processing file: " . $filename[$i]);
 
       //Skip all files not ending in .txt
       $path_part = pathinfo($filename[$i]);
       $path_ext = strtolower($path_part['extension']);
-      error_log("[DEBUG] File extension: " . $path_ext);
       if ($path_ext <> "txt") {
         $msg .= "File " . htmlspecialchars($filename[$i]) . " does not end in '.txt' unable to upload<br>";
-        error_log("[DEBUG] Skipping file (not .txt): " . $filename[$i]);
         continue;
       } else {
       // Validate MIME type for additional security
@@ -100,10 +89,8 @@ $db = []; // create empty array
             $targetpath = $dirname . "/" . $filename[$i];
       if (!move_uploaded_file($tempname, $targetpath)) {
           $msg .= "File " . htmlspecialchars($filename[$i]) . " failed to upload to server.<br>";
-          error_log("[ERROR] Failed to move uploaded file to: " . $targetpath);
           continue;
       }
-      error_log("[DEBUG] File successfully moved to: " . $targetpath);
 
       // Check if uploaded filename is not in array of DB names
             if (!in_array($filename[$i], $db)) {
@@ -132,10 +119,8 @@ $db = []; // create empty array
         
         if ($file_contents === false) {
             $msg .= "File " . htmlspecialchars($filename[$i]) . " could not be read from disk.<br>";
-            error_log("[ERROR] Failed to read file contents from: " . $targetpath);
             continue;
         }
-        error_log("[DEBUG] File contents read successfully, length: " . strlen($file_contents));
 
       // Bind the statement and execute
             $statement->bind_param("sssss", $datetime, $model, $serial, $file_contents, $filename[$i]);
@@ -154,5 +139,4 @@ $db = []; // create empty array
 if ($count > 0) {
   $msg .= "<br><font color='green'>!!!!! " . $count . " files uploaded successfuly to the DB !!!!!</font><br>";
 }
-error_log('[DEBUG] main.php completed');
 ?>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>8800SX - Upload Files</title>
+    <title>Upload Files</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/6b773fe9e4.js" crossorigin="anonymous"></script>
     <style type="text/css">
@@ -79,7 +79,7 @@
         $('#file-upload').on('click', function(e) {
             e.preventDefault();
             var files = $('#multiple_files')[0].files;
-            var batchSize = 10;
+            var batchSize = 100;
             var batchStatus = $('#batch-status');
             batchStatus.html('');
 
@@ -88,7 +88,7 @@
                 return;
             }
 
-            // Client-side file validation
+          // Client-side file validation
             var maxSize = 128 * 1024 * 1024; // 128MB
             var validFiles = [];
             for (var i = 0; i < files.length; i++) {
@@ -107,7 +107,7 @@
                 batchStatus.append('<div class="error">' + <?php echo json_encode(translate('No valid .txt files to upload', false)); ?> + '</div>');
                 return;
             }
-
+ 
             // Function to upload files in batches
             function uploadBatch(batchIndex) {
                 var totalBatches = Math.ceil(validFiles.length / batchSize);
