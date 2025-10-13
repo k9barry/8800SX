@@ -2,7 +2,7 @@
 
 [![Code Quality](https://github.com/k9barry/viavi/actions/workflows/code-quality.yml/badge.svg)](https://github.com/k9barry/viavi/actions/workflows/code-quality.yml)
 [![License](https://img.shields.io/github/license/k9barry/viavi)](LICENSE)
-[![Version](https://img.shields.io/badge/version-3.0.2-blue)](https://github.com/k9barry/viavi/releases)
+[![Version](https://img.shields.io/badge/version-3.0.3-blue)](https://github.com/k9barry/viavi/releases)
 [![PHP Version](https://img.shields.io/badge/php-8.3.2-purple)](https://www.php.net/)
 [![Docker](https://img.shields.io/badge/docker-compose-blue)](https://docs.docker.com/compose/)
 [![MySQL](https://img.shields.io/badge/mysql-latest-orange)](https://www.mysql.com/)
