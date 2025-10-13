@@ -16,6 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Streamlined CI/CD pipeline by replacing Docker-specific workflows with semantic versioning workflow
 
+### Fixed
+- Semantic versioning workflow now automatically updates CHANGELOG.md when releasing new versions
+  - Moves items from [Unreleased] section to new version section with date
+  - Updates version comparison links at the end of the file
+- Semantic versioning workflow now automatically updates README.md version badge
+- Fixed trailing spaces in semantic-versioning.yml workflow file
+
 ### Removed
 - Removed docker-image.yml workflow (replaced by semantic versioning workflow)
 - Removed docker-publish.yml workflow (replaced by semantic versioning workflow)
