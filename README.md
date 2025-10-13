@@ -11,7 +11,7 @@
 
 A Docker-based web application for managing and analyzing output files from Viavi 8800SX service monitors. This system automatically parses test data files, stores them in a MySQL database, and provides a user-friendly interface for searching and managing service records.
 
-![Viavi 8800SX Database Interface](https://github.com/k9barry/8800SX/assets/16656369/0c9ba0b5-dd22-4f9d-a76a-404b8d11aaaa)
+![Viavi 8800SX Database Interface](https://github.com/k9barry/viavi/blob/21c623ed4bee4cef8491e5ed261672732e458ff2/assets/main_screenshot.png)
 
 ## 📋 Table of Contents
 
