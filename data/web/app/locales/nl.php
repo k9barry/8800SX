@@ -1,5 +1,6 @@
 <?php
-return array(
+
+return [
     // menus
     'Select Page' => 'Pagina selecteren',
     'Back' => 'Terug',
@@ -53,5 +54,4 @@ return array(
     "references_tables" => "Verwijzingen naar deze %s:",
     "references_view_btn" => "Bekijk %s %s met %s = %s",
 
-);
-?>
+];

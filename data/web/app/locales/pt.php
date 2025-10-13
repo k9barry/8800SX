@@ -1,5 +1,6 @@
 <?php
-return array(
+
+return [
     // menus
     'Select Page' => 'Selecionar Página',
     'Back' => 'Voltar',
@@ -54,5 +55,4 @@ return array(
     "references_view_btn" => "Ver %s %s com %s = %s",
 
 
-);
-?>
+];

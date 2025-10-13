@@ -1,5 +1,6 @@
 <?php
-return array(
+
+return [
     // menus
     'Select Page' => 'Vyberte stránku',
     'Back' => 'Zpět',
@@ -54,5 +55,4 @@ return array(
     "references_view_btn" => "Zobrazit %s %s s %s = %s",
 
 
-);
-?>
+];

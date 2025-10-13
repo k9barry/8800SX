@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Configuration file for Viavi 8800SX application
- * 
+ *
  * This file contains all configuration variables and their values.
- * 
+ *
  * @author Viavi 8800SX
  */
 
@@ -30,10 +31,10 @@ $db_user = 'viavi';
  * Database password (loaded from file for security)
  */
 $passwordFile = getenv("DB_PASSWORD_FILE");
-if (!$passwordFile) {
+if (! $passwordFile) {
     throw new Exception("DB_PASSWORD_FILE environment variable is not set");
 }
-if (!file_exists($passwordFile)) {
+if (! file_exists($passwordFile)) {
     throw new Exception("Password file not found: " . $passwordFile);
 }
 $db_password = trim(file_get_contents($passwordFile));
@@ -91,7 +92,7 @@ $upload_persistent_dir = true;
  * Array of file extensions that are not allowed for upload
  * Includes executable files, scripts, and potentially dangerous file types
  */
-$upload_disallowed_exts = array(
+$upload_disallowed_exts = [
     'php', 'php3', 'php4', 'php5', 'php7', 'phtml',  // PHP and PHP-like files
     'html', 'htm', 'js', 'jsp', 'asp', 'aspx',       // HTML, JavaScript, and Server-side scripts
     'exe', 'bat', 'sh', 'bin',                       // Executable and shell script files
@@ -104,7 +105,7 @@ $upload_disallowed_exts = array(
     'reg',                                           // Registry files
     'swf',                                           // Adobe Flash files
     'lnk',                                           // Windows shortcut files
-);
+];
 
 // ============================================================================
 // DATABASE CONNECTION
@@ -116,7 +117,7 @@ $upload_disallowed_exts = array(
  */
 $link = mysqli_connect($db_server, $db_user, $db_password, $db_name);
 
-if (!$link) {
+if (! $link) {
     throw new Exception("Database connection failed: " . mysqli_connect_error());
 }
 
@@ -124,10 +125,10 @@ if (!$link) {
 $query = "SHOW VARIABLES LIKE 'character_set_database'";
 if ($result = mysqli_query($link, $query)) {
     while ($row = mysqli_fetch_row($result)) {
-        if (!$link->set_charset($row[1])) {
+        if (! $link->set_charset($row[1])) {
             throw new Exception(
-                "Error loading character set " . 
-                htmlspecialchars($row[1]) . ": " . 
+                "Error loading character set " .
+                htmlspecialchars($row[1]) . ": " .
                 htmlspecialchars($link->error)
             );
         }
@@ -141,7 +142,7 @@ if ($result = mysqli_query($link, $query)) {
 /**
  * Validate language code to prevent path traversal
  */
-if (!preg_match('/^[a-z]{2}$/', $language)) {
+if (! preg_match('/^[a-z]{2}$/', $language)) {
     throw new Exception("Invalid language code: " . $language);
 }
 
@@ -150,7 +151,7 @@ if (!preg_match('/^[a-z]{2}$/', $language)) {
  * Used by the translate() helper function
  */
 $localeFile = __DIR__ . "/locales/{$language}.php";
-if (!file_exists($localeFile)) {
+if (! file_exists($localeFile)) {
     throw new Exception("Translation file not found: " . $localeFile);
 }
 $translations = include($localeFile);

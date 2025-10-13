@@ -1,5 +1,6 @@
 <?php
-return array(
+
+return [
     // menus
     'Select Page' => 'ページを選択',
     'Back' => '戻る',
@@ -53,5 +54,4 @@ return array(
     "references_tables" => "この %s への参照:",
     "references_view_btn" => "%s %s を %s = %s で表示する",
 
-);
-?>
+];

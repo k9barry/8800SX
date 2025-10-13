@@ -46,7 +46,9 @@
                     </div>
 
                     <div class="box mt-4">
-                        <?php if (session_status() === PHP_SESSION_NONE) session_start(); ?>
+                        <?php if (session_status() === PHP_SESSION_NONE) {
+                            session_start();
+                        } ?>
                         <form method="post" action="main.php" enctype="multipart/form-data" autocomplete="off">
                             <input type="hidden" name="csrf_token" value="<?php echo isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : ($_SESSION['csrf_token'] = bin2hex(random_bytes(32))); ?>">
                             <div class="form-group">
@@ -57,7 +59,7 @@
                                 <input type="button" id="file-upload" value="<?php translate('Submit') ?>" class="btn btn-success" />
                                 <div id="batch-status"></div>
                             </div>
-                            <?php if (!empty($msg)) { ?>
+                            <?php if (! empty($msg)) { ?>
                                 <div class="alert alert-info mt-3" role="alert">
                                     <?php echo $msg; ?>
                                 </div>

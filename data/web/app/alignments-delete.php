@@ -8,9 +8,9 @@ session_start();
  * @author Viavi 8800SX
  */
 
-if (isset($_POST["id"]) && !empty($_POST["id"])) {
+if (isset($_POST["id"]) && ! empty($_POST["id"])) {
     // CSRF token check
-    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+    if (! isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
         die(translate('Invalid CSRF token.'));
     }
     $fileColumns = [];
@@ -21,15 +21,20 @@ if (isset($_POST["id"]) && !empty($_POST["id"])) {
             }
         }
     }
-    if (!empty($fileColumns)) {
+    if (! empty($fileColumns)) {
         foreach ($fileColumns as $columnName) {
             $sql = "SELECT `" . $columnName . "` FROM `alignments` WHERE `id` = ?";
             if ($stmt = mysqli_prepare($link, $sql)) {
                 $param_id = trim($_POST["id"]);
-                if (is_int($param_id)) $__vartype = "i";
-                elseif (is_string($param_id)) $__vartype = "s";
-                elseif (is_numeric($param_id)) $__vartype = "d";
-                else $__vartype = "b";
+                if (is_int($param_id)) {
+                    $__vartype = "i";
+                } elseif (is_string($param_id)) {
+                    $__vartype = "s";
+                } elseif (is_numeric($param_id)) {
+                    $__vartype = "d";
+                } else {
+                    $__vartype = "b";
+                }
                 mysqli_stmt_bind_param($stmt, $__vartype, $param_id);
                 if (mysqli_stmt_execute($stmt)) {
                     $result = mysqli_stmt_get_result($stmt);
@@ -52,10 +57,15 @@ if (isset($_POST["id"]) && !empty($_POST["id"])) {
     $sql = "DELETE FROM `alignments` WHERE `id` = ?";
     if ($stmt = mysqli_prepare($link, $sql)) {
         $param_id = trim($_POST["id"]);
-        if (is_int($param_id)) $__vartype = "i";
-        elseif (is_string($param_id)) $__vartype = "s";
-        elseif (is_numeric($param_id)) $__vartype = "d";
-        else $__vartype = "b";
+        if (is_int($param_id)) {
+            $__vartype = "i";
+        } elseif (is_string($param_id)) {
+            $__vartype = "s";
+        } elseif (is_numeric($param_id)) {
+            $__vartype = "d";
+        } else {
+            $__vartype = "b";
+        }
         mysqli_stmt_bind_param($stmt, $__vartype, $param_id);
 
         try {
@@ -64,7 +74,7 @@ if (isset($_POST["id"]) && !empty($_POST["id"])) {
             $error = $e->getMessage();
         }
 
-        if (!isset($error)){
+        if (! isset($error)) {
             // Records deleted successfully. Redirect to landing page
             header("location: alignments-index.php");
         }
@@ -75,10 +85,10 @@ if (isset($_POST["id"]) && !empty($_POST["id"])) {
 
     // Close connection
     mysqli_close($link);
-} else{
+} else {
     // Check existence of id parameter
-	$_GET["id"] = trim($_GET["id"]);
-    if(empty($_GET["id"])){
+    $_GET["id"] = trim($_GET["id"]);
+    if (empty($_GET["id"])) {
         // URL doesn't contain id parameter. Redirect to error page
         header("location: error.php");
         exit();
@@ -89,7 +99,7 @@ if (isset($_POST["id"]) && !empty($_POST["id"])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title><?php translate ('Delete Record') ?></title>
+    <title><?php translate('Delete Record') ?></title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
 </head>
 <?php require_once('navbar.php'); ?>
@@ -99,7 +109,7 @@ if (isset($_POST["id"]) && !empty($_POST["id"])) {
             <div class="row">
                 <div class="col-md-6 mx-auto">
                     <div class="page-header">
-                        <h1><?php translate ('Delete Record') ?></h1>
+                        <h1><?php translate('Delete Record') ?></h1>
                     </div>
                     <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) . "?id=" . $_GET["id"]; ?>" method="post">
                     <?php print_error_if_exists(@$error); ?>

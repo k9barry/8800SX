@@ -1,5 +1,6 @@
 <?php
-return array(
+
+return [
     // menus
     'Select Page' => 'Sélectionnez un contenu',
     'Back' => 'Retour',
@@ -54,5 +55,4 @@ return array(
     // foreign keys
     "references_tables" => "Liens avec %s :",
     "references_view_btn" => "Voir %s %s avec %s = %s",
-);
-?>
+];

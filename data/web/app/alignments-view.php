@@ -9,7 +9,7 @@ require_once('navbar.php');
  * @author Viavi 8800SX
  */
 
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+if (! isset($_GET['id']) || ! is_numeric($_GET['id'])) {
     echo "<div class='alert alert-danger'>" . translate('Invalid record ID.') . "</div>";
     exit;
 }
