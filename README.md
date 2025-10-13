@@ -116,6 +116,8 @@ All containers should show as "Up" and healthy.
 
 ### Uploading Test Files
 
+![Upload Interface](assets/upload_screenshot.png)
+
 1. Open your web browser and navigate to http://localhost:8080
 2. Click the "Choose Files" button
 3. Select one or more `.txt` files from your Viavi 8800SX service monitor
@@ -123,6 +125,8 @@ All containers should show as "Up" and healthy.
 5. Wait for the upload confirmation message
 
 ### Viewing Records
+
+![View Records](assets/view_screenshot.png)
 
 1. Click the "Alignment Database" button on the main page
 2. Use the search box to filter records by any field
@@ -143,7 +147,13 @@ All containers should show as "Up" and healthy.
 - **Create**: Add new records manually through the database interface
 - **Read**: View individual records and their details
 - **Update**: Modify existing records (via PHPMyAdmin)
+
+![Update Record](assets/update_screenshot.png)
+
 - **Delete**: Remove unwanted records
+
+![Delete Record](assets/delete_screenshot.png)
+
 - **Search**: Filter records by datetime, model, serial number, or filename
 
 ## ⚙️ Configuration
