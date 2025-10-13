@@ -252,7 +252,16 @@ The project includes automated workflows for code quality and versioning:
   - Reads version from `version.txt`
   - Bumps version based on PR labels (major, minor, patch)
   - Updates `version.txt`
+  - Updates `CHANGELOG.md`:
+    - Moves items from `[Unreleased]` section to new version section with date
+    - Updates version comparison links at the end of the file
+  - Updates `README.md` version badge
   - Creates GitHub release with version tag
+- **PR Labels**: Apply one of these labels to control version bumping:
+  - `major` - Breaking changes (X.0.0)
+  - `minor` - New features (0.X.0)
+  - `patch` - Bug fixes (0.0.X)
+  - Default: If no label is provided, defaults to `patch` version bump
 
 ## Documentation Structure
 

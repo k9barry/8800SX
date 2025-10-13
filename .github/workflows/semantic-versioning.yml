@@ -12,22 +12,22 @@ jobs:
     permissions:
       contents: write
       pull-requests: read
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: Determine version bump
         id: version_bump
         run: |
           # Get PR labels
           LABELS=$(gh pr view ${{ github.event.pull_request.number }} --json labels --jq '.labels[].name' || echo "")
-          
+
           # Default to patch if no label found
           BUMP_TYPE="patch"
-          
+
           # Check for version labels (case-insensitive)
           if echo "$LABELS" | grep -iq "major"; then
             BUMP_TYPE="major"
@@ -36,12 +36,12 @@ jobs:
           elif echo "$LABELS" | grep -iq "patch"; then
             BUMP_TYPE="patch"
           fi
-          
+
           echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
           echo "Version bump type: $BUMP_TYPE"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Read current version
         id: current_version
         run: |
@@ -52,16 +52,16 @@ jobs:
           fi
           echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "Current version: $CURRENT_VERSION"
-      
+
       - name: Calculate new version
         id: new_version
         run: |
           CURRENT="${{ steps.current_version.outputs.version }}"
           BUMP_TYPE="${{ steps.version_bump.outputs.bump_type }}"
-          
+
           # Parse current version
           IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
-          
+
           # Bump version based on type
           case "$BUMP_TYPE" in
             major)
@@ -77,24 +77,123 @@ jobs:
               PATCH=$((PATCH + 1))
               ;;
           esac
-          
+
           NEW_VERSION="$MAJOR.$MINOR.$PATCH"
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "New version: $NEW_VERSION"
-      
+
       - name: Update version.txt
         run: |
           echo "${{ steps.new_version.outputs.version }}" > version.txt
           echo "Updated version.txt to ${{ steps.new_version.outputs.version }}"
-      
+
+      - name: Update CHANGELOG.md
+        run: |
+          NEW_VERSION="${{ steps.new_version.outputs.version }}"
+          CURRENT_DATE=$(date +%Y-%m-%d)
+
+          # Check if CHANGELOG.md exists
+          if [ ! -f CHANGELOG.md ]; then
+            echo "CHANGELOG.md not found, skipping update"
+            exit 0
+          fi
+
+          # Check if there's an [Unreleased] section with content
+          if ! grep -q "## \[Unreleased\]" CHANGELOG.md; then
+            echo "No [Unreleased] section found in CHANGELOG.md, skipping update"
+            exit 0
+          fi
+
+          # Create a temporary file for the updated changelog
+          TMP_FILE=$(mktemp)
+
+          # Read the changelog and update it
+          awk -v version="$NEW_VERSION" -v date="$CURRENT_DATE" '
+          BEGIN {
+            in_unreleased = 0
+            found_unreleased = 0
+            has_content = 0
+            unreleased_content = ""
+          }
+
+          # Match [Unreleased] header
+          /^## \[Unreleased\]/ {
+            in_unreleased = 1
+            found_unreleased = 1
+            print $0
+            next
+          }
+
+          # Collect content from unreleased section
+          in_unreleased && /^### / {
+            has_content = 1
+            unreleased_content = unreleased_content $0 "\n"
+            next
+          }
+
+          # Collect other lines in unreleased section
+          in_unreleased && !/^## / {
+            if (length($0) > 0 || length(unreleased_content) > 0) {
+              unreleased_content = unreleased_content $0 "\n"
+            }
+            next
+          }
+
+          # When we hit the next version section
+          /^## \[[0-9]+\.[0-9]+\.[0-9]+\]/ && in_unreleased {
+            # If unreleased had content, add new version section with that content
+            if (has_content) {
+              print ""
+              print "## [" version "] - " date
+              printf "%s", unreleased_content
+            }
+            in_unreleased = 0
+            print $0
+            next
+          }
+
+          # Update version comparison links at the end
+          /^\[Unreleased\]:/ {
+            print "[Unreleased]: https://github.com/k9barry/viavi/compare/v" version "...HEAD"
+            next
+          }
+
+          # Add new version comparison link after [Unreleased] link
+          /^\[[0-9]+\.[0-9]+\.[0-9]+\]:/ && found_unreleased {
+            print "[" version "]: https://github.com/k9barry/viavi/releases/tag/v" version
+            found_unreleased = 0
+          }
+
+          # Print all other lines
+          { print $0 }
+          ' CHANGELOG.md > "$TMP_FILE"
+
+          # Replace original file
+          mv "$TMP_FILE" CHANGELOG.md
+          echo "Updated CHANGELOG.md with version $NEW_VERSION"
+
+      - name: Update README.md version badge
+        run: |
+          NEW_VERSION="${{ steps.new_version.outputs.version }}"
+
+          # Check if README.md exists
+          if [ ! -f README.md ]; then
+            echo "README.md not found, skipping update"
+            exit 0
+          fi
+
+          # Update version badge
+          sed -i "s/version-[0-9]\+\.[0-9]\+\.[0-9]\+-blue/version-$NEW_VERSION-blue/g" README.md
+          echo "Updated README.md version badge to $NEW_VERSION"
+
       - name: Commit version update
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add version.txt
+          git add version.txt CHANGELOG.md README.md
           git commit -m "chore: bump version to ${{ steps.new_version.outputs.version }}" || echo "No changes to commit"
           git push || echo "Nothing to push"
-      
+
       - name: Create Release
         uses: actions/create-release@v1
         env:
@@ -104,11 +203,11 @@ jobs:
           release_name: Release v${{ steps.new_version.outputs.version }}
           body: |
             ## Version ${{ steps.new_version.outputs.version }}
-            
+
             This release was automatically created by the semantic versioning workflow.
-            
+
             **Version bump type**: ${{ steps.version_bump.outputs.bump_type }}
-            
+
             See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
           draft: false
           prerelease: false
