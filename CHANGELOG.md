@@ -99,11 +99,14 @@ Add changes to the `[Unreleased]` section using these categories:
 - **Security** - security fixes
 
 ### For Maintainers
-When releasing a new version:
-1. Move items from `[Unreleased]` to a new version section
-2. Add version number and date: `## [X.Y.Z] - YYYY-MM-DD`
-3. Create new empty `[Unreleased]` section
-4. Update version comparison links below
+When releasing a new version, the semantic versioning workflow automatically:
+1. Moves items from `[Unreleased]` to a new version section
+2. Adds version number and date: `## [X.Y.Z] - YYYY-MM-DD`
+3. Creates new empty `[Unreleased]` section
+4. Updates version comparison links below
+5. Updates the README.md version badge
+
+**Note**: This process is now automated through GitHub Actions when PRs are merged to main. Just ensure you add the appropriate PR label (major, minor, or patch) to control the version bump.
 
 ### Version Format
 - **MAJOR** (X.0.0) - Incompatible API changes
