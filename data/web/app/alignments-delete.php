@@ -8,10 +8,6 @@ session_start();
  * @author Viavi 8800SX
  */
 
-// Get configuration instance
-$config = Config::getInstance();
-$link = $config->getDb();
-
 if (isset($_POST["id"]) && !empty($_POST["id"])) {
     // CSRF token check
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {

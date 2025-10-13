@@ -22,11 +22,6 @@
 require_once('config.php');
 require_once('helpers.php');
 require_once('config-tables-columns.php');
-
-// Get configuration instance
-$config = Config::getInstance();
-$link = $config->getDb();
-$no_of_records_per_page = $config->getNoOfRecordsPerPage();
 ?>
 <?php require_once('navbar.php'); ?>
 <body>

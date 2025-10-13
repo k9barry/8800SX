@@ -7,10 +7,6 @@ require_once('helpers.php');
  * @author Viavi 8800SX
  */
 
-// Get configuration instance
-$config = Config::getInstance();
-$link = $config->getDb();
-
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     die(translate('Invalid record ID.'));
 }
