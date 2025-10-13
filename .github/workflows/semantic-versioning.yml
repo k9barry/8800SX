@@ -87,6 +87,22 @@ jobs:
           echo "${{ steps.new_version.outputs.version }}" > version.txt
           echo "Updated version.txt to ${{ steps.new_version.outputs.version }}"
 
+      - name: Get PR details
+        id: pr_details
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          PR_TITLE=$(gh pr view $PR_NUMBER --json title --jq '.title')
+          PR_BODY=$(gh pr view $PR_NUMBER --json body --jq '.body')
+          
+          # Save PR details to files for multiline handling
+          echo "$PR_TITLE" > /tmp/pr_title.txt
+          echo "$PR_BODY" > /tmp/pr_body.txt
+          
+          echo "PR Title: $PR_TITLE"
+          echo "PR Body length: ${#PR_BODY}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Update CHANGELOG.md
         run: |
           NEW_VERSION="${{ steps.new_version.outputs.version }}"
@@ -98,70 +114,67 @@ jobs:
             exit 0
           fi
 
-          # Check if there's an [Unreleased] section with content
-          if ! grep -q "## \[Unreleased\]" CHANGELOG.md; then
-            echo "No [Unreleased] section found in CHANGELOG.md, skipping update"
-            exit 0
-          fi
+          # Read PR details
+          PR_TITLE=$(cat /tmp/pr_title.txt)
+          PR_BODY=$(cat /tmp/pr_body.txt)
 
           # Create a temporary file for the updated changelog
           TMP_FILE=$(mktemp)
 
-          # Read the changelog and update it
-          awk -v version="$NEW_VERSION" -v date="$CURRENT_DATE" '
+          # Find the first version section or "How to Use" section to insert before
+          awk -v version="$NEW_VERSION" -v date="$CURRENT_DATE" -v pr_title="$PR_TITLE" -v pr_body="$PR_BODY" '
           BEGIN {
-            in_unreleased = 0
-            found_unreleased = 0
-            has_content = 0
-            unreleased_content = ""
+            inserted = 0
           }
 
-          # Match [Unreleased] header
-          /^## \[Unreleased\]/ {
-            in_unreleased = 1
-            found_unreleased = 1
-            print $0
-            next
-          }
-
-          # Collect content from unreleased section
-          in_unreleased && /^### / {
-            has_content = 1
-            unreleased_content = unreleased_content $0 "\n"
-            next
-          }
-
-          # Collect other lines in unreleased section
-          in_unreleased && !/^## / {
-            if (length($0) > 0 || length(unreleased_content) > 0) {
-              unreleased_content = unreleased_content $0 "\n"
-            }
-            next
-          }
-
-          # When we hit the next version section
-          /^## \[[0-9]+\.[0-9]+\.[0-9]+\]/ && in_unreleased {
-            # If unreleased had content, add new version section with that content
-            if (has_content) {
+          # Insert new version before the first existing version section
+          /^## \[[0-9]+\.[0-9]+\.[0-9]+\]/ && !inserted {
+            print "## [" version "] - " date
+            print ""
+            if (length(pr_title) > 0) {
+              print "### " pr_title
               print ""
-              print "## [" version "] - " date
-              printf "%s", unreleased_content
             }
-            in_unreleased = 0
+            if (length(pr_body) > 0) {
+              print pr_body
+              print ""
+            }
+            inserted = 1
             print $0
             next
           }
 
-          # Update version comparison links at the end
-          /^\[Unreleased\]:/ {
-            print "[Unreleased]: https://github.com/k9barry/viavi/compare/v" version "...HEAD"
+          # Insert new version before "How to Use This Changelog" if no version sections found
+          /^## How to Use This Changelog/ && !inserted {
+            print "## [" version "] - " date
+            print ""
+            if (length(pr_title) > 0) {
+              print "### " pr_title
+              print ""
+            }
+            if (length(pr_body) > 0) {
+              print pr_body
+              print ""
+            }
+            inserted = 1
+            print $0
             next
           }
 
-          # Add new version comparison link after [Unreleased] link
-          /^\[[0-9]+\.[0-9]+\.[0-9]+\]:/ && found_unreleased {
+          # Add new version comparison link after separator line
+          /^---$/ {
+            print $0
+            print ""
             print "[" version "]: https://github.com/k9barry/viavi/releases/tag/v" version
-            found_unreleased = 0
+            next
+          }
+
+          # Skip existing version link if it matches (avoid duplicates)
+          /^\[[0-9]+\.[0-9]+\.[0-9]+\]:/ {
+            if ($0 !~ "\\[" version "\\]:") {
+              print $0
+            }
+            next
           }
 
           # Print all other lines
@@ -195,19 +208,29 @@ jobs:
           git push || echo "Nothing to push"
 
       - name: Create Release
-        uses: actions/create-release@v1
+        run: |
+          NEW_VERSION="${{ steps.new_version.outputs.version }}"
+          BUMP_TYPE="${{ steps.version_bump.outputs.bump_type }}"
+          PR_TITLE=$(cat /tmp/pr_title.txt)
+          PR_BODY=$(cat /tmp/pr_body.txt)
+          
+          # Create release body
+          RELEASE_BODY="## Version $NEW_VERSION
+
+**Version bump type**: $BUMP_TYPE
+
+### $PR_TITLE
+
+$PR_BODY
+
+---
+
+See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for full version history."
+
+          # Create the release
+          echo "$RELEASE_BODY" | gh release create "v$NEW_VERSION" \
+            --title "Release v$NEW_VERSION" \
+            --notes-file - \
+            --repo ${{ github.repository }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ steps.new_version.outputs.version }}
-          release_name: Release v${{ steps.new_version.outputs.version }}
-          body: |
-            ## Version ${{ steps.new_version.outputs.version }}
-
-            This release was automatically created by the semantic versioning workflow.
-
-            **Version bump type**: ${{ steps.version_bump.outputs.bump_type }}
-
-            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
-          draft: false
-          prerelease: false
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

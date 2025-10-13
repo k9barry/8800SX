@@ -5,7 +5,6 @@ All notable changes to the Viavi 8800SX Database project will be documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
 ## [3.0.2] - 2025-10-13
 ### Fixed
 - Updated CHANGELOG.md to include missing version 3.0.2 section
@@ -94,7 +93,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## How to Use This Changelog
 
 ### For Contributors
-Add changes to the `[Unreleased]` section using these categories:
+Document your changes in the Pull Request description. Use these categories for clarity:
 - **Added** - new features
 - **Changed** - changes to existing functionality
 - **Deprecated** - soon-to-be removed features
@@ -103,14 +102,14 @@ Add changes to the `[Unreleased]` section using these categories:
 - **Security** - security fixes
 
 ### For Maintainers
-When releasing a new version, the semantic versioning workflow automatically:
-1. Moves items from `[Unreleased]` to a new version section
-2. Adds version number and date: `## [X.Y.Z] - YYYY-MM-DD`
-3. Creates new empty `[Unreleased]` section
-4. Updates version comparison links below
-5. Updates the README.md version badge
+When a PR is merged to main, the semantic versioning workflow automatically:
+1. Creates a new version section with: `## [X.Y.Z] - YYYY-MM-DD`
+2. Adds the PR title and description as the release notes
+3. Updates version comparison links
+4. Updates the README.md version badge
+5. Creates a GitHub release with the same information
 
-**Note**: This process is now automated through GitHub Actions when PRs are merged to main. Just ensure you add the appropriate PR label (major, minor, or patch) to control the version bump.
+**Note**: Ensure you add the appropriate PR label (major, minor, or patch) to control the version bump. The PR title and description become the changelog entry, so write them clearly and descriptively.
 
 ### Version Format
 - **MAJOR** (X.0.0) - Incompatible API changes
@@ -119,7 +118,6 @@ When releasing a new version, the semantic versioning workflow automatically:
 
 ---
 
-[Unreleased]: https://github.com/k9barry/viavi/compare/v3.0.3...HEAD
 [3.0.3]: https://github.com/k9barry/viavi/releases/tag/v3.0.3
 [3.0.2]: https://github.com/k9barry/viavi/releases/tag/v3.0.2
 [3.0.1]: https://github.com/k9barry/viavi/releases/tag/v3.0.1
