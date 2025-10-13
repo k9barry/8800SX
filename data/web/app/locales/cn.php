@@ -1,5 +1,6 @@
 <?php
-return array(
+
+return [
     // menus
     'Select Page' => '选择页面',
     'Back' => '返回',
@@ -55,5 +56,4 @@ return array(
     "references_view_btn" => "查看 %s %s 与 %s = %s",
 
 
-);
-?>
+];

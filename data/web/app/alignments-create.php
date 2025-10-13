@@ -7,34 +7,30 @@ session_start();
  * @author Viavi 8800SX
  */
 
-// Get configuration instance
-$config = Config::getInstance();
-$link = $config->getDb();
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // CSRF token check
-    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+    if (! isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
         die(translate('Invalid CSRF token.'));
     }
-    $upload_results = array();
-    if (!empty($_FILES)) {
+    $upload_results = [];
+    if (! empty($_FILES)) {
         foreach ($_FILES as $key => $value) {
             if ($value['error'] != UPLOAD_ERR_NO_FILE) {
                 $this_upload = handleFileUpload($_FILES[$key]);
                 $upload_results[] = $this_upload;
-                if (!in_array(true, array_column($this_upload, 'error')) && !array_key_exists('error', $this_upload)) {
+                if (! in_array(true, array_column($this_upload, 'error')) && ! array_key_exists('error', $this_upload)) {
                     $_POST[$key] = $this_upload['success'];
                 }
             }
         }
     }
-    $upload_errors = array();
+    $upload_errors = [];
     foreach ($upload_results as $result) {
         if (isset($result['error'])) {
             $upload_errors[] = $result['error'];
         }
     }
-    if (!in_array(true, array_column($upload_results, 'error'))) {
+    if (! in_array(true, array_column($upload_results, 'error'))) {
         $datetime = trim(filter_var($_POST["datetime"], FILTER_SANITIZE_STRING));
         $model = trim(filter_var($_POST["model"], FILTER_SANITIZE_STRING));
         $serial = trim(filter_var($_POST["serial"], FILTER_SANITIZE_STRING));
@@ -42,12 +38,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $entered = trim(filter_var($_POST["entered"], FILTER_SANITIZE_STRING));
         $filename = trim(filter_var($_POST["filename"], FILTER_SANITIZE_STRING));
         $stmt = $link->prepare("INSERT INTO `alignments` (`datetime`, `model`, `serial`, `file`, `entered`, `filename`) VALUES (?, ?, ?, ?, ?, ?)");
+
         try {
             $stmt->execute([ $datetime, $model, $serial, $file, $entered, $filename ]);
         } catch (Exception $e) {
             $error = $e->getMessage();
         }
-        if (!isset($error)) {
+        if (! isset($error)) {
             $new_id = mysqli_insert_id($link);
             header("location: alignments-read.php?id=$new_id");
         } else {
@@ -99,7 +96,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                             
 <input type="file" name="file" id="file" class="form-control">
 <input type="hidden" name="cruddiy_backup_file" id="cruddiy_backup_file" value="<?php echo @$file; ?>">
-<?php if (isset($file) && !empty($file)) : ?>
+<?php if (isset($file) && ! empty($file)) : ?>
 <div class="custom-control custom-checkbox">
     <input type="checkbox" class="custom-control-input" id="cruddiy_delete_file" name="cruddiy_delete_file" value="1">
     <label class="custom-control-label" for="cruddiy_delete_file">

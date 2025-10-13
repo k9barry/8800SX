@@ -1,7 +1,8 @@
 <?php
+
 /**
  * Security Headers
- * 
+ *
  * This file sets security headers for all pages to protect against common vulnerabilities.
  * Include this file at the top of each page that needs security headers.
  */
@@ -27,5 +28,3 @@ header("Permissions-Policy: geolocation=(), microphone=(), camera=()");
 // Strict Transport Security (HSTS) - only enable this if using HTTPS
 // Uncomment the line below when deploying with HTTPS
 // header("Strict-Transport-Security: max-age=31536000; includeSubDomains");
-
-?>

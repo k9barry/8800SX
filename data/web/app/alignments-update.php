@@ -8,64 +8,61 @@ session_start();
  * @author Viavi 8800SX
  */
 
-// Get configuration instance
-$config = Config::getInstance();
-$link = $config->getDb();
-
-if (isset($_POST["id"]) && !empty($_POST["id"])) {
+if (isset($_POST["id"]) && ! empty($_POST["id"])) {
     // CSRF token check
-    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+    if (! isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
         die(translate('Invalid CSRF token.'));
-    // ...existing code...
-    $id = $_POST["id"];
-    $upload_results = array();
-    $upload_errors = array();
-    foreach ($_POST as $key => $value) {
-        if (substr($key, 0, 15) === 'cruddiy_backup_') {
-            $originalKey = substr($key, 15);
-            if (isset($_FILES[$originalKey]) && $_FILES[$originalKey]['error'] == UPLOAD_ERR_OK) {
-                $this_upload = handleFileUpload($_FILES[$originalKey]);
-                $upload_results[] = $this_upload;
-                if (!in_array(true, array_column($this_upload, 'error')) && !array_key_exists('error', $this_upload)) {
-                    $_POST[$originalKey] = $this_upload['success'];
-                    unlink($config->getUploadTargetDir() . $_POST['cruddiy_backup_' . $originalKey]);
+        // ...existing code...
+        $id = $_POST["id"];
+        $upload_results = [];
+        $upload_errors = [];
+        foreach ($_POST as $key => $value) {
+            if (substr($key, 0, 15) === 'cruddiy_backup_') {
+                $originalKey = substr($key, 15);
+                if (isset($_FILES[$originalKey]) && $_FILES[$originalKey]['error'] == UPLOAD_ERR_OK) {
+                    $this_upload = handleFileUpload($_FILES[$originalKey]);
+                    $upload_results[] = $this_upload;
+                    if (! in_array(true, array_column($this_upload, 'error')) && ! array_key_exists('error', $this_upload)) {
+                        $_POST[$originalKey] = $this_upload['success'];
+                        unlink($config->getUploadTargetDir() . $_POST['cruddiy_backup_' . $originalKey]);
+                    }
+                } else {
+                    $_POST[$originalKey] = $value;
                 }
-            } else {
-                $_POST[$originalKey] = $value;
+            }
+            if (substr($key, 0, 15) === 'cruddiy_delete_') {
+                $deleteKey = substr($key, 15);
+                if (isset($_POST['cruddiy_delete_' . $deleteKey]) && $_POST['cruddiy_delete_' . $deleteKey]) {
+                    $_POST[$deleteKey] = '';
+                    @unlink($config->getUploadTargetDir() . $_POST['cruddiy_backup_' . $deleteKey]);
+                }
             }
         }
-        if (substr($key, 0, 15) === 'cruddiy_delete_') {
-            $deleteKey = substr($key, 15);
-            if (isset($_POST['cruddiy_delete_' . $deleteKey]) && $_POST['cruddiy_delete_' . $deleteKey]) {
-                $_POST[$deleteKey] = '';
-                @unlink($config->getUploadTargetDir() . $_POST['cruddiy_backup_' . $deleteKey]);
+        $upload_errors = [];
+        foreach ($upload_results as $result) {
+            if (isset($result['error'])) {
+                $upload_errors[] = $result['error'];
             }
         }
-    }
-    $upload_errors = array();
-    foreach ($upload_results as $result) {
-        if (isset($result['error'])) {
-            $upload_errors[] = $result['error'];
+        if (! in_array(true, array_column($upload_results, 'error'))) {
+            $datetime = trim(filter_var($_POST["datetime"], FILTER_SANITIZE_STRING));
+            $model = trim(filter_var($_POST["model"], FILTER_SANITIZE_STRING));
+            $serial = trim(filter_var($_POST["serial"], FILTER_SANITIZE_STRING));
+            $file = trim(filter_var($_POST["file"], FILTER_SANITIZE_STRING));
+            $entered = trim(filter_var($_POST["entered"], FILTER_SANITIZE_STRING));
+            $filename = trim(filter_var($_POST["filename"], FILTER_SANITIZE_STRING));
+            $stmt = $link->prepare("UPDATE `alignments` SET `datetime`=?,`model`=?,`serial`=?,`file`=?,`entered`=?,`filename`=? WHERE `id`=?");
+
+            try {
+                $stmt->execute([ $datetime, $model, $serial, $file, $entered, $filename, $id ]);
+            } catch (Exception $e) {
+                $error = $e->getMessage();
+            }
         }
-    }
-    if (!in_array(true, array_column($upload_results, 'error'))) {
-        $datetime = trim(filter_var($_POST["datetime"], FILTER_SANITIZE_STRING));
-        $model = trim(filter_var($_POST["model"], FILTER_SANITIZE_STRING));
-        $serial = trim(filter_var($_POST["serial"], FILTER_SANITIZE_STRING));
-        $file = trim(filter_var($_POST["file"], FILTER_SANITIZE_STRING));
-        $entered = trim(filter_var($_POST["entered"], FILTER_SANITIZE_STRING));
-        $filename = trim(filter_var($_POST["filename"], FILTER_SANITIZE_STRING));
-        $stmt = $link->prepare("UPDATE `alignments` SET `datetime`=?,`model`=?,`serial`=?,`file`=?,`entered`=?,`filename`=? WHERE `id`=?");
-        try {
-            $stmt->execute([ $datetime, $model, $serial, $file, $entered, $filename, $id ]);
-        } catch (Exception $e) {
-            $error = $e->getMessage();
-        }
-    }
-        if (!isset($error)){
+        if (! isset($error)) {
             header("location: alignments-read.php?id=$id");
         } else {
-            $uploaded_files = array();
+            $uploaded_files = [];
             foreach ($upload_results as $result) {
                 if (isset($result['success'])) {
                     // Delete the uploaded files if there were any error while saving postdata in DB
@@ -78,28 +75,33 @@ if (isset($_POST["id"]) && !empty($_POST["id"])) {
 }
 // Check existence of id parameter before processing further
 $_GET["id"] = trim($_GET["id"]);
-if(isset($_GET["id"]) && !empty($_GET["id"])){
+if (isset($_GET["id"]) && ! empty($_GET["id"])) {
     // Get URL parameter
-    $id =  trim($_GET["id"]);
+    $id = trim($_GET["id"]);
 
     // Prepare a select statement
     $sql = "SELECT * FROM `alignments` WHERE `id` = ?";
-    if($stmt = mysqli_prepare($link, $sql)){
+    if ($stmt = mysqli_prepare($link, $sql)) {
         // Set parameters
         $param_id = $id;
 
         // Bind variables to the prepared statement as parameters
-        if (is_int($param_id)) $__vartype = "i";
-        elseif (is_string($param_id)) $__vartype = "s";
-        elseif (is_numeric($param_id)) $__vartype = "d";
-        else $__vartype = "b"; // blob
+        if (is_int($param_id)) {
+            $__vartype = "i";
+        } elseif (is_string($param_id)) {
+            $__vartype = "s";
+        } elseif (is_numeric($param_id)) {
+            $__vartype = "d";
+        } else {
+            $__vartype = "b";
+        } // blob
         mysqli_stmt_bind_param($stmt, $__vartype, $param_id);
 
         // Attempt to execute the prepared statement
-        if(mysqli_stmt_execute($stmt)){
+        if (mysqli_stmt_execute($stmt)) {
             $result = mysqli_stmt_get_result($stmt);
 
-            if(mysqli_num_rows($result) == 1){
+            if (mysqli_num_rows($result) == 1) {
                 /* Fetch result row as an associative array. Since the result set
                 contains only one row, we don't need to use while loop */
                 $row = mysqli_fetch_array($result, MYSQLI_ASSOC);
@@ -107,20 +109,20 @@ if(isset($_GET["id"]) && !empty($_GET["id"])){
                 // Retrieve individual field value
 
                 $datetime = htmlspecialchars($row["datetime"] ?? "");
-					$model = htmlspecialchars($row["model"] ?? "");
-					$serial = htmlspecialchars($row["serial"] ?? "");
-					$file = htmlspecialchars($row["file"] ?? "");
-					$entered = htmlspecialchars($row["entered"] ?? "");
-					$filename = htmlspecialchars($row["filename"] ?? "");
-					
+                $model = htmlspecialchars($row["model"] ?? "");
+                $serial = htmlspecialchars($row["serial"] ?? "");
+                $file = htmlspecialchars($row["file"] ?? "");
+                $entered = htmlspecialchars($row["entered"] ?? "");
+                $filename = htmlspecialchars($row["filename"] ?? "");
 
-            } else{
+
+            } else {
                 // URL doesn't contain valid id. Redirect to error page
                 header("location: error.php");
                 exit();
             }
 
-        } else{
+        } else {
             translate('stmt_error') . "<br>".$stmt->error;
         }
     }
@@ -128,7 +130,7 @@ if(isset($_GET["id"]) && !empty($_GET["id"])){
     // Close statement
     mysqli_stmt_close($stmt);
 
-}  else{
+} else {
     // URL doesn't contain id parameter. Redirect to error page
     header("location: error.php");
     exit();
@@ -173,7 +175,7 @@ if(isset($_GET["id"]) && !empty($_GET["id"])){
                                             
 <input type="file" name="file" id="file" class="form-control">
 <input type="hidden" name="cruddiy_backup_file" id="cruddiy_backup_file" value="<?php echo @$file; ?>">
-<?php if (isset($file) && !empty($file)) : ?>
+<?php if (isset($file) && ! empty($file)) : ?>
 <div class="custom-control custom-checkbox">
     <input type="checkbox" class="custom-control-input" id="cruddiy_delete_file" name="cruddiy_delete_file" value="1">
     <label class="custom-control-label" for="cruddiy_delete_file">

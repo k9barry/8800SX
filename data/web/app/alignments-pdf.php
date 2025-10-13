@@ -1,4 +1,5 @@
 <?php
+
 require_once('security-headers.php');
 require_once('config.php');
 require_once('helpers.php');
@@ -7,11 +8,7 @@ require_once('helpers.php');
  * @author Viavi 8800SX
  */
 
-// Get configuration instance
-$config = Config::getInstance();
-$link = $config->getDb();
-
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+if (! isset($_GET['id']) || ! is_numeric($_GET['id'])) {
     die(translate('Invalid record ID.'));
 }
 $id = intval($_GET['id']);
@@ -37,7 +34,7 @@ $pdf->SetAuthor('Viavi 8800SX');
 $pdf->SetTitle($filename);
 $pdf->SetSubject('Alignment File');
 $pdf->SetMargins(10, 10, 10);
-$pdf->SetAutoPageBreak(TRUE, 10);
+$pdf->SetAutoPageBreak(true, 10);
 $pdf->AddPage();
 $pdf->SetFont('courier', '', 8); // Smaller font for more columns
 

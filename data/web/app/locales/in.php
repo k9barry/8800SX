@@ -1,5 +1,6 @@
 <?php
-return array(
+
+return [
     // menus
     'Select Page' => 'पेज का चयन करें',
     'Back' => 'वापस',
@@ -53,5 +54,4 @@ return array(
     "references_tables" => "इस %s के संदर्भ:",
     "references_view_btn" => "%s %s को %s = %s के साथ देखें",
 
-);
-?>
+];
