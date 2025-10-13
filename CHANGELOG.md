@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.1] - 2025-10-13
 ### Added
 - New semantic versioning workflow for automated release management
   - Supports version bumping based on PR labels (major, minor, patch)
@@ -115,6 +116,7 @@ When releasing a new version, the semantic versioning workflow automatically:
 
 ---
 
-[Unreleased]: https://github.com/k9barry/viavi/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/k9barry/viavi/compare/v3.0.1...HEAD
+[3.0.1]: https://github.com/k9barry/viavi/releases/tag/v3.0.1
 [2.1.0]: https://github.com/k9barry/viavi/releases/tag/v2.1.0
 [1.0.0]: https://github.com/k9barry/viavi/releases/tag/v1.0.0
