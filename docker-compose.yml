@@ -6,6 +6,7 @@ services:
     restart: always
     depends_on:
       - php-fpm
+    # If using traefik you may comment out the ports section
     ports:
       - 8080:80
     volumes:
@@ -74,3 +75,4 @@ secrets:
 networks:
   viavi:
     driver: bridge
+
