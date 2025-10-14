@@ -5,6 +5,69 @@ All notable changes to the Viavi 8800SX Database project will be documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.5] - 2025-10-14
+
+### Create empty uploads folder with 0777 permissions and track in git
+
+## Summary
+
+This PR creates an empty `uploads/` directory at `/data/web/app/` with 0777 permissions and ensures it's tracked in the git repository.
+
+## Changes
+
+- **Removed** `data/web/app/uploads/` from `.gitignore` to allow the directory to be tracked
+- **Created** the `data/web/app/uploads/` directory with 0777 permissions
+- **Added** `.gitkeep` file inside the uploads directory (git requires a file to track empty directories)
+
+## Rationale
+
+Previously, the uploads directory was dynamically created at runtime by the application code when files were uploaded. This PR makes the directory part of the repository structure with proper permissions, ensuring:
+
+1. The directory is always present when the application starts
+2. Permissions are explicitly set to 0777 for proper file upload handling
+3. Docker containers can mount this directory without permission issues
+4. The directory structure is clear to developers and operators
+
+## Backward Compatibility
+
+This change is fully backward compatible. The existing code in `main.php` and `helpers.php` checks if the directory exists before attempting to create it:
+
+```php
+if (!file_exists($upload_target_dir)) {
+    mkdir($upload_target_dir, 0777, true);
+}
+```
+
+Since the directory now exists in the repository, the application will simply skip the creation step and use the existing directory.
+
+## Testing
+
+Verified that:
+- Directory has correct 0777 permissions (`drwxrwxrwx`)
+- Directory is tracked by git and included in commits
+- PHP can detect and write to the directory
+- Existing upload functionality remains compatible
+
+<!-- START COPILOT CODING AGENT SUFFIX -->
+
+
+
+<details>
+
+<summary>Original prompt</summary>
+
+> Create an empty uploads folder in this repo at /data/web/app/ and   keep it in the repo as an empty file.  give it 0777 permissions
+
+
+</details>
+
+
+
+<!-- START COPILOT CODING AGENT TIPS -->
+---
+
+✨ Let Copilot coding agent [set things up for you](https://github.com/k9barry/viavi/issues/new?title=✨+Set+up+Copilot+instructions&body=Configure%20instructions%20for%20this%20repository%20as%20documented%20in%20%5BBest%20practices%20for%20Copilot%20coding%20agent%20in%20your%20repository%5D%28https://gh.io/copilot-coding-agent-tips%29%2E%0A%0A%3COnboard%20this%20repo%3E&assignees=copilot) — coding agent works faster and does higher quality work when set up for your repo.
+
 ## [3.0.4] - 2025-10-13
 
 ### Automate CHANGELOG updates with PR title and description for every release
@@ -118,6 +181,8 @@ Closes #[issue-number]
 
 <!-- START COPILOT CODING AGENT TIPS -->
 ---
+
+[3.0.5]: https://github.com/k9barry/viavi/releases/tag/v3.0.5
 
 💡 You can make Copilot smarter by setting up custom instructions, customizing its development environment and configuring Model Context Protocol (MCP) servers. Learn more [Copilot coding agent tips](https://gh.io/copilot-coding-agent-tips) in the docs.
 
@@ -233,6 +298,8 @@ When a PR is merged to main, the semantic versioning workflow automatically:
 - **PATCH** (0.0.X) - Backwards-compatible bug fixes
 
 ---
+
+[3.0.5]: https://github.com/k9barry/viavi/releases/tag/v3.0.5
 
 [3.0.4]: https://github.com/k9barry/viavi/releases/tag/v3.0.4
 
