@@ -5,6 +5,110 @@ All notable changes to the Viavi 8800SX Database project will be documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.6] - 2025-11-09
+
+### Add missing v3.0.0 changelog entry for multi-container architecture transition
+
+### **User description**
+CHANGELOG.md jumped from v2.1.0 to v3.0.1, skipping documentation of the v3.0.0 multi-container architecture migration completed in PR #28.
+
+## Changes
+
+- **Added v3.0.0 section** (2025-10-08) between v3.0.1 and v2.1.0 documenting:
+  - Multi-container Docker Compose architecture with separate web (Nginx), php-fpm, and db (MySQL 8.4.2) services
+  - Docker secrets integration via `secrets/db_password.txt`
+  - Traefik reverse proxy labels for production deployments
+  - Breaking change from unified to multi-container architecture
+  - Migration guide with backup/restore procedures
+
+- **Added version comparison link** for v3.0.0 in changelog footer
+
+The entry accurately reflects the repository's current state: three independent services communicating over a dedicated Docker network, file-based secret management, and optional Traefik integration for production reverse proxy deployments.
+
+<!-- START COPILOT CODING AGENT SUFFIX -->
+
+
+
+<details>
+
+<summary>Original prompt</summary>
+
+> Issue #28
+
+
+</details>
+
+
+
+<!-- START COPILOT CODING AGENT TIPS -->
+---
+
+✨ Let Copilot coding agent [set things up for you](https://github.com/k9barry/viavi/issues/new?title=✨+Set+up+Copilot+instructions&body=Configure%20instructions%20for%20this%20repository%20as%20documented%20in%20%5BBest%20practices%20for%20Copilot%20coding%20agent%20in%20your%20repository%5D%28https://gh.io/copilot-coding-agent-tips%29%2E%0A%0A%3COnboard%20this%20repo%3E&assignees=copilot) — coding agent works faster and does higher quality work when set up for your repo.
+
+
+___
+
+### **PR Type**
+Documentation
+
+
+___
+
+### **Description**
+- Added comprehensive v3.0.0 changelog entry documenting multi-container architecture transition
+
+- Documented three independent services: Nginx web, PHP-FPM, MySQL database
+
+- Included migration guide with backup/restore procedures for upgrading users
+
+- Added Traefik reverse proxy configuration and Docker secrets integration details
+
+
+___
+
+### Diagram Walkthrough
+
+
+```mermaid
+flowchart LR
+  A["v2.1.0<br/>Unified Container"] -->|"Breaking Change"| B["v3.0.0<br/>Multi-Container"]
+  B --> C["Nginx Web<br/>viavi-web"]
+  B --> D["PHP-FPM<br/>viavi-php"]
+  B --> E["MySQL 8.4.2<br/>viavi-db"]
+  C -->|"Docker Network"| D
+  C -->|"Docker Network"| E
+  D -->|"Docker Network"| E
+```
+
+
+
+<details> <summary><h3> File Walkthrough</h3></summary>
+
+<table><thead><tr><th></th><th align="left">Relevant files</th></tr></thead><tbody><tr><td><strong>Documentation</strong></td><td><table>
+<tr>
+  <td>
+    <details>
+      <summary><strong>CHANGELOG.md</strong><dd><code>Add v3.0.0 multi-container architecture changelog entry</code>&nbsp; &nbsp; </dd></summary>
+<hr>
+
+CHANGELOG.md
+
+<ul><li>Added v3.0.0 section (2025-10-08) documenting multi-container Docker <br>Compose architecture<br> <li> Detailed three independent services: Nginx, PHP-FPM, and MySQL with <br>specific versions<br> <li> Documented Docker secrets integration, dedicated network, and Traefik <br>reverse proxy labels<br> <li> Included comprehensive migration guide with backup/restore procedures <br>and breaking change notice<br> <li> Added version comparison link in changelog footer for v3.0.0 release</ul>
+
+
+</details>
+
+
+  </td>
+  <td><a href="https://github.com/k9barry/viavi/pull/58/files#diff-06572a96a58dc510037d5efa622f9bec8519bc1beab13c9f251e97e657a9d4ed">+85/-0</a>&nbsp; &nbsp; </td>
+
+</tr>
+</table></td></tr></tr></tbody></table>
+
+</details>
+
+___
+
 ## [3.0.5] - 2025-10-14
 
 ### Create empty uploads folder with 0777 permissions and track in git
@@ -65,6 +169,8 @@ Verified that:
 
 <!-- START COPILOT CODING AGENT TIPS -->
 ---
+
+[3.0.6]: https://github.com/k9barry/viavi/releases/tag/v3.0.6
 
 ✨ Let Copilot coding agent [set things up for you](https://github.com/k9barry/viavi/issues/new?title=✨+Set+up+Copilot+instructions&body=Configure%20instructions%20for%20this%20repository%20as%20documented%20in%20%5BBest%20practices%20for%20Copilot%20coding%20agent%20in%20your%20repository%5D%28https://gh.io/copilot-coding-agent-tips%29%2E%0A%0A%3COnboard%20this%20repo%3E&assignees=copilot) — coding agent works faster and does higher quality work when set up for your repo.
 
@@ -181,6 +287,8 @@ Closes #[issue-number]
 
 <!-- START COPILOT CODING AGENT TIPS -->
 ---
+
+[3.0.6]: https://github.com/k9barry/viavi/releases/tag/v3.0.6
 
 [3.0.5]: https://github.com/k9barry/viavi/releases/tag/v3.0.5
 
@@ -382,6 +490,8 @@ When a PR is merged to main, the semantic versioning workflow automatically:
 - **PATCH** (0.0.X) - Backwards-compatible bug fixes
 
 ---
+
+[3.0.6]: https://github.com/k9barry/viavi/releases/tag/v3.0.6
 
 [3.0.5]: https://github.com/k9barry/viavi/releases/tag/v3.0.5
 
