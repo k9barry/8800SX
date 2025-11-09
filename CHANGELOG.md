@@ -211,6 +211,90 @@ Closes #[issue-number]
 - Removed docker-image.yml workflow (replaced by semantic versioning workflow)
 - Removed docker-publish.yml workflow (replaced by semantic versioning workflow)
 
+## [3.0.0] - 2025-10-08
+
+### Overview
+
+This major version introduces a multi-container Docker Compose architecture, separating the web server, PHP-FPM, and database into independent services for improved scalability, maintainability, and deployment flexibility.
+
+### Added
+
+- Multi-container Docker Compose architecture with three separate services:
+  - **web**: Nginx web server (container: `viavi-web`)
+  - **php-fpm**: PHP 8.3.2-FPM application server (container: `viavi-php`)
+  - **db**: MySQL 8.4.2 database server (container: `viavi-db`)
+- Docker secrets support for secure password management via `secrets/db_password.txt`
+- Dedicated Docker network (`viavi`) for inter-service communication
+- Traefik reverse proxy labels for production deployments (commented out by default)
+  - HTTP to HTTPS redirect configuration
+  - Let's Encrypt certificate resolver support
+  - Host-based routing for `viavi.example.com`
+
+### Changed
+
+- **Breaking**: Transitioned from unified container to multi-container architecture
+- Dockerfile now builds only PHP-FPM container (previously included Nginx + PHP + MySQL)
+- Database connection in `config.php` now uses `DB_PASSWORD_FILE` environment variable
+- Service dependencies configured with `depends_on` for proper startup order
+- Container names standardized: `viavi-web`, `viavi-php`, `viavi-db`
+- Network configuration simplified with single bridge network
+
+### Configuration
+
+- Database password now loaded from Docker secrets file
+- Environment variable `DB_PASSWORD_FILE` points to secrets location
+- Port 8080 exposed for web interface (configurable in docker-compose.yml)
+- Volume mounts preserved for persistence:
+  - Database data: `./data/db/data`
+  - Database logs: `./data/db/logs`
+  - Application code: `./data/web`
+
+### Migration Notes
+
+Users upgrading from v2.1.0 or earlier need to:
+
+1. **Backup existing data**:
+
+   ```bash
+   docker exec viavi mysqldump -u viavi -p viavi > backup.sql
+   ```
+
+2. **Stop old container**:
+
+   ```bash
+   docker stop viavi && docker rm viavi
+   ```
+
+3. **Ensure password file exists**:
+
+   ```bash
+   echo "YourSecurePassword" > secrets/db_password.txt
+   ```
+
+4. **Deploy multi-container setup**:
+
+   ```bash
+   docker compose up -d
+   ```
+
+5. **Restore data if needed** (for fresh database):
+
+   ```bash
+   docker exec -i viavi-db mysql -u viavi -p viavi < backup.sql
+   ```
+
+### Benefits
+
+- **Scalability**: Individual services can be scaled independently
+- **Maintainability**: Easier to update or replace individual components
+- **Flexibility**: Services can be deployed on different hosts if needed
+- **Security**: Database isolated from web-accessible containers
+- **Production-ready**: Built-in Traefik support for reverse proxy deployments
+
+### Backward Compatibility
+
+This is a **breaking change**. The unified container approach from v2.x is no longer supported. Users must migrate to the multi-container architecture.
+
 ## [2.1.0] - 2025-10-11
 
 ### Added
@@ -306,5 +390,6 @@ When a PR is merged to main, the semantic versioning workflow automatically:
 [3.0.3]: https://github.com/k9barry/viavi/releases/tag/v3.0.3
 [3.0.2]: https://github.com/k9barry/viavi/releases/tag/v3.0.2
 [3.0.1]: https://github.com/k9barry/viavi/releases/tag/v3.0.1
+[3.0.0]: https://github.com/k9barry/viavi/releases/tag/v3.0.0
 [2.1.0]: https://github.com/k9barry/viavi/releases/tag/v2.1.0
 [1.0.0]: https://github.com/k9barry/viavi/releases/tag/v1.0.0
